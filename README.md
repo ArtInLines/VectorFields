@@ -1,2 +1,3 @@
 # VectorFields
- A native desktop app visualizing vector fields
+
+A native desktop app visualizing vector fields
