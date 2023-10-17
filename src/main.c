@@ -316,10 +316,6 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 	}
 	if (depth > 1) return (Parse_Err){ .msg = "Unbalanced Parantheses", .idx = *idx };
 
-	printf("Parsed Expr:\n");
-	printIR(*node);
-	printf("\n\n");
-
 	return (Parse_Err){0};
 }
 
@@ -622,7 +618,6 @@ int main(void)
 	IR root = {0};
 	IR updatedRoot;
 	parseUserFunc(inputBox.label.text, arrlen(inputBox.label.text) - 1, &root);
-	printIR(root);
 	checkUserFunc(&root);
 
 	onResize();
