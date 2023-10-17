@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"*.pl": "prolog",
+		"*.rb": "ruby",
+		"stb_ds.h": "c"
+	}
+}

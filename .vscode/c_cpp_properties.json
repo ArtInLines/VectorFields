@@ -1,0 +1,11 @@
+{
+	"configurations": [
+		{
+			"includePath": ["deps/**"],
+			"intelliSenseMode": "windows-gcc-x64",
+			"compilerPath": "C:\\MinGW\\bin\\gcc.exe",
+			"cStandard": "c99"
+		}
+	],
+	"version": 4
+}

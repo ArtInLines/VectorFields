@@ -7,7 +7,7 @@ set CFLAGS=-Wall -Wextra -Wimplicit -Wpedantic -Wno-unused-function -std=c99
 
 :: Compiler-Options to include dependencies
 set LIB_PATHS=-L./bin
-set INCLUDES=-I./deps/raylib/src
+set INCLUDES=-I./deps/raylib/src -I./deps/stb -I./deps/artinlines
 set RAYLIB_DEP=-lraylib -lopengl32 -lgdi32 -lwinmm -lpthread
 set DEPS=%INCLUDES% %LIB_PATHS% %RAYLIB_DEP%
 
@@ -19,6 +19,7 @@ if defined BUILD_ALL (
 	:: Remove old bin folder
 	if exist bin rmdir bin /S /Q
 	mkdir bin
+	xcopy assets\ bin\assets\ /E /Q
 	:: Build raylib
 	cd deps/raylib/src
 	make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_RELEASE_PATH=../../../bin RAYLIB_BUILD_MODE=DEBUG
@@ -28,4 +29,4 @@ if defined BUILD_ALL (
 
 :: Build executable
 cmd /c if exist bin\main.exe del /F bin\main.exe
-gcc %CFLAGS% %PROD_FLAGS% -o bin/main src/main.c %DEPS%
+gcc %CFLAGS% %DEV_FLAGS% -o bin/main src/main.c %DEPS%
