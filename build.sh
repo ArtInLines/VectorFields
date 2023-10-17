@@ -19,7 +19,7 @@ if [[ $1 -eq "a" ]] || [ -d "./bin" ]; then
 	cd ../../..
 fi
 
-if [ -f "./bin/main" ]; then
-	rm -f "./bin/main"
+if [ -f "./bin/VectorFields" ]; then
+	rm -f "./bin/VectorFields"
 fi
-gcc $CFLAGS $DEV_FLAGS -o bin/main src/main.c $DEPS
+gcc $CFLAGS $DEV_FLAGS -o bin/VectorFields src/main.c $DEPS

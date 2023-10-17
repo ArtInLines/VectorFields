@@ -28,5 +28,5 @@ if defined BUILD_ALL (
 
 
 :: Build executable
-cmd /c if exist bin\main.exe del /F bin\main.exe
-gcc %CFLAGS% %DEV_FLAGS% -o bin/main src/main.c %DEPS%
+cmd /c if exist bin\VectorFields.exe del /F bin\VectorFields.exe
+gcc %CFLAGS% %DEV_FLAGS% -o bin/VectorFields src/main.c %DEPS%

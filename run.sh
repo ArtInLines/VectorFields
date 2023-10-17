@@ -1,2 +1,2 @@
 ./build.sh
-./bin/main
+./bin/VectorFields
