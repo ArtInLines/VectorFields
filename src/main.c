@@ -639,7 +639,12 @@ int main(void)
 
 		for (u32 i = 0; i < n; i++) {
 			if (!field[i].lifetime) field[i] = randParticle();
-			IR_Eval_Res res = evalUserFunc(root, (Vector2) { .x = field[i].x, .y = field[i].y });
+			// Normalize field value
+			Vector2 in = {
+				.x = 2*field[i].x/winWidth  - 1,
+				.y = 2*field[i].y/winHeight - 1,
+			};
+			IR_Eval_Res res = evalUserFunc(root, in);
 			if (!res.succ) break;
 			Vector2 v = res.val.v;
 			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, WHITE);
