@@ -4,6 +4,10 @@ A native desktop app visualizing vector fields. A vector field basically just as
 
 Each point's vector is computed via a function, that you can change yourself.
 
+## Demo
+
+![Demo Gif](./docs/changing-func-demo.gif)
+
 ## Building
 
 To build the executable, you need both `gcc` and `make` installed and in your path.
