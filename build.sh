@@ -22,4 +22,4 @@ fi
 if [ -f "./bin/VectorFields" ]; then
 	rm -f "./bin/VectorFields"
 fi
-gcc $CFLAGS $DEV_FLAGS -o bin/VectorFields src/main.c $DEPS
+gcc $CFLAGS $PROD_FLAGS -o bin/VectorFields src/main.c $DEPS
