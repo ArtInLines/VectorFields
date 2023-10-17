@@ -23,6 +23,13 @@
 #define CLAMP(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
 
 typedef struct {
+	float h; // Hue        [0, 1]
+	float s; // Saturation [0, 1]
+	float l; // Ligthness  [0, 1]
+	u8    a; // Alpha - same as in RGBA
+} HSLA;
+
+typedef struct {
 	float x;
 	float y;
 	u8 lifetime;
@@ -58,6 +65,52 @@ Particle randParticle(void)
 	};
 }
 
+Color hslToRGB(HSLA col)
+{
+	//  Algorithm adapted from Wikipedia: https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB
+	float r1, g1, b1;
+	float chroma = (1.0f - fabsf(2.0f*col.l - 1.0f)) * col.s;
+	float hPrime = col.h*360.0f / 60.0f;
+	float x      = chroma * (1 - fabsf(fmodf(hPrime, 2) - 1));
+
+	if (hPrime < 1.0f) {
+		r1 = chroma;
+		g1 = x;
+		b1 = 0.0f;
+	} else if (hPrime < 2.0f) {
+		r1 = x;
+		g1 = chroma;
+		b1 = 0.0f;
+	} else if (hPrime < 3.0f) {
+		r1 = 0.0f;
+		g1 = chroma;
+		b1 = x;
+	} else if (hPrime < 4.0f) {
+		r1 = 0.0f;
+		g1 = x;
+		b1 = chroma;
+	} else if (hPrime < 5.0f) {
+		r1 = x;
+		g1 = 0.0f;
+		b1 = chroma;
+	} else {
+		r1 = chroma;
+		g1 = 0.0f;
+		b1 = x;
+	}
+
+	float m = col.l - chroma/2.0f;
+	u8 r = roundf(255.0f*(r1 + m));
+	u8 g = roundf(255.0f*(g1 + m));
+	u8 b = roundf(255.0f*(b1 + m));
+	return (Color) { r, g, b, col.a };
+}
+
+float lerp(float min, float max, float t)
+{
+	return min + t*(max - min);
+}
+
 Vector2 addVector2(Vector2 a, Vector2 b)
 {
 	return (Vector2) {
@@ -72,6 +125,11 @@ Vector2 subVector2(Vector2 a, Vector2 b)
 		.x = a.x - b.x,
 		.y = a.y - b.y,
 	};
+}
+
+float lenVector2(Vector2 v)
+{
+	return sqrtf(v.x*v.x + v.y*v.y);
 }
 
 i32 powi(i32 a, i32 b)
@@ -332,10 +390,7 @@ Parse_Err parseUserFunc(char *text, i32 textlen, IR *root)
 	while (idx < textlen) {
 		IR *node = root;
 		Parse_Err err = parseExpr(text, textlen, &idx, node, 0);
-		if (err.msg) {
-			printf("Error in parsing at line %d: %s\n", err.idx, err.msg);
-			return err;
-		}
+		if (err.msg) return err;
 	}
 	return (Parse_Err){0};
 }
@@ -642,7 +697,14 @@ int main(void)
 			IR_Eval_Res res = evalUserFunc(root, in);
 			if (!res.succ) break;
 			Vector2 v = res.val.v;
-			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, WHITE);
+			float len = lenVector2(v);
+			HSLA hsl = {
+				lerp(0.0f, 120.0f/360.0f, CLAMP(1 - len, 0, 1)),
+				lerp(0.5f, 1.0f, CLAMP(len, 0, 1)),
+				0.5f,
+				255
+			};
+			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, hslToRGB(hsl));
 			field[i].x += v.x/2.0f;
 			field[i].y += v.y/2.0f;
 			field[i].lifetime--;
