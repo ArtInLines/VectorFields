@@ -2,6 +2,8 @@ Original STB source code downloaded from [https://github.com/raysan5/raylib](htt
 
 Stripped off everything except `./LICENSE` and `./src/`.
 
-No further modifications were applied.
+All furter modifications are listed below:
+
+* Added function `bool IsAnyKeyPressed(void)` in `rcore.c` and `raylib.h`
 
 -   [ArtInLines](https://github.com/ArtInLines)

@@ -3590,10 +3590,10 @@ unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDa
     struct sdefl *sdefl = RL_CALLOC(1, sizeof(struct sdefl));   // WARNING: Possible stack overflow, struct sdefl is almost 1MB
     int bounds = dataSize*2;//sdefl_bound(dataSize);
     compData = (unsigned char *)RL_CALLOC(bounds, 1);
-    
+
     *compDataSize = sdeflate(sdefl, compData, data, dataSize, COMPRESSION_QUALITY_DEFLATE);   // Compression level 8, same as stbiw
     RL_FREE(sdefl);
-    
+
     TRACELOG(LOG_INFO, "SYSTEM: Compress data: Original size: %i -> Comp. size: %i", dataSize, *compDataSize);
 #endif
 
@@ -3884,6 +3884,11 @@ int GetCharPressed(void)
     }
 
     return value;
+}
+
+bool IsAnyKeyPressed(void)
+{
+    return CORE.Input.Keyboard.keyPressedQueueCount > 0;
 }
 
 // Set a custom key to exit program

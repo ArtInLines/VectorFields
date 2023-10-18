@@ -687,6 +687,9 @@ int main(void)
 	SetGesturesEnabled(GESTURE_PINCH_IN | GESTURE_PINCH_OUT);
 	float zoomFactor = 10.0f;
 
+	float hideHUDAfter = 5.0f; // in seconds
+	float hideHUDSecs  = 0.0f;
+
 	onResize();
 	while (!WindowShouldClose()) {
 		BeginDrawing();
@@ -731,18 +734,33 @@ int main(void)
 
 		inputBox.label.bounds.width = winWidth;
 		inputBox.label.bounds.width = winHeight;
-		bool updated = gui_drawInputBox(&inputBox).updated;
 
-		// @TODO: Show error messages to user
-		if (updated) {
-			updatedRoot = (IR) {0};
-			Parse_Err err = parseUserFunc(inputBox.label.text, arrlen(inputBox.label.text) - 1, &updatedRoot);
-			if (err.msg) {
-				printf("Error in parsing at index %d: '%s'\n", err.idx, err.msg);
-			} else if (checkUserFunc(&updatedRoot)) {
-				root = updatedRoot;
-			} else {
-				printf("Error in type checking\n");
+		if (gui_isPointInRec(GetMouseX(),
+							 GetMouseY(),
+							 inputBox.label.bounds.x,
+							 inputBox.label.bounds.y,
+							 inputBox.label.bounds.width,
+							 inputBox.label.bounds.height
+							)
+			|| IsAnyKeyPressed()) {
+			hideHUDSecs = 0;
+		} else {
+			hideHUDSecs += GetFrameTime();
+		}
+
+		if (hideHUDSecs < hideHUDAfter) {
+			bool updated = gui_drawInputBox(&inputBox).updated;
+			// @TODO: Show error messages to user
+			if (updated) {
+				updatedRoot = (IR) {0};
+				Parse_Err err = parseUserFunc(inputBox.label.text, arrlen(inputBox.label.text) - 1, &updatedRoot);
+				if (err.msg) {
+					printf("Error in parsing at index %d: '%s'\n", err.idx, err.msg);
+				} else if (checkUserFunc(&updatedRoot)) {
+					root = updatedRoot;
+				} else {
+					printf("Error in type checking\n");
+				}
 			}
 		}
 

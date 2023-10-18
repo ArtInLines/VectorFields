@@ -76,7 +76,6 @@ I will probably not work on this for some time, but the following represents (in
 -   [ ] Change input to infix notation
 -   [ ] Offer more capabilities to input language (e.g. variables, functions)
 -   [ ] Offer toggle for fullscreen
--   [ ] Hide input box if not used for some time
 -   [ ] Move computations to GPU
 -   [ ] Allow user to change the amount of simulated particles
 -   [ ] Add ability to render the current animation to a (looping?) video/gif (probably by using ffmpeg behind the scenes)
