@@ -26,7 +26,9 @@ All dependencies are packaged in the `deps/` folder and are built along with the
 
 ## Usage
 
-You can change the function, that is used to create the Vector Field. You will see it applied in real time.
+With the mousewheel or by pinching in/out on your touchpad, you can zoom in/out of the Vector Field.
+
+You can also change the function, that is used to create the Vector Field. You will see it applied in real time.
 
 Your function needs to be written in a paranthesized [prefix notation](https://en.wikipedia.org/wiki/Polish_notation) (similar to [Lisp](<https://en.wikipedia.org/wiki/Lisp_(programming_language)>)).
 
@@ -77,5 +79,4 @@ I will probably not work on this for some time, but the following represents (in
 -   [ ] Hide input box if not used for some time
 -   [ ] Move computations to GPU
 -   [ ] Allow user to change the amount of simulated particles
--   [ ] Allow user to zoom in and out (i.e. changing normalization range for x-,y-coordinates)
 -   [ ] Add ability to render the current animation to a (looping?) video/gif (probably by using ffmpeg behind the scenes)
