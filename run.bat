@@ -1,3 +1,3 @@
 @echo off
-call build.bat
+call build.bat "%*"
 call bin\VectorFields.exe

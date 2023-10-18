@@ -29,4 +29,11 @@ if defined BUILD_ALL (
 
 :: Build executable
 cmd /c if exist bin\VectorFields.exe del /F bin\VectorFields.exe
-gcc %CFLAGS% %PROD_FLAGS% -o bin/VectorFields src/main.c %DEPS%
+if "%~1"=="d" set DEV=1
+if "%~1"=="-d" set DEV=1
+if defined DEV (
+	set CFLAGS=%CFLAGS% %DEV_FLAGS%
+) else (
+	set CFLAGS=%CFLAGS% %PROD_FLAGS%
+)
+gcc %CFLAGS% -o bin/VectorFields src/main.c %DEPS%

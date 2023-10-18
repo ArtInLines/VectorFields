@@ -22,4 +22,9 @@ fi
 if [ -f "./bin/VectorFields" ]; then
 	rm -f "./bin/VectorFields"
 fi
-gcc $CFLAGS $PROD_FLAGS -o bin/VectorFields src/main.c $DEPS
+if [[ $1 -eq "d" || $1 -eq "-d" ]]; then
+	CFLAGS=$CFLAGS $DEV_FLAGS
+else
+	CFLAGS=$CFLAGS $PROD_FLAGS
+fi
+gcc $CFLAGS -o bin/VectorFields src/main.c $DEPS
