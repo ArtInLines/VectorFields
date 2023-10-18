@@ -41,7 +41,7 @@ static i32 winHeight =  800;
 static u64 n;
 static Particle *field;
 static Gui_Input_Box inputBox;
-static char *defaultFunc = "(vec2 (sin (+ x y)) (tan (* x y)))";
+static char *defaultFunc = "(vec2 (sin (+ x y)) (cos (* x y)))";
 
 u32 xorshift()
 {
@@ -684,6 +684,9 @@ int main(void)
 	parseUserFunc(inputBox.label.text, arrlen(inputBox.label.text) - 1, &root);
 	checkUserFunc(&root);
 
+	SetGesturesEnabled(GESTURE_PINCH_IN | GESTURE_PINCH_OUT);
+	float zoomFactor = 10.0f;
+
 	onResize();
 	while (!WindowShouldClose()) {
 		BeginDrawing();
@@ -700,8 +703,8 @@ int main(void)
 			if (!field[i].lifetime) field[i] = randParticle();
 			// Normalize field value
 			Vector2 in = {
-				.x = 2*field[i].x/winWidth  - 1,
-				.y = 2*field[i].y/winHeight - 1,
+				.x = 2*zoomFactor*field[i].x/winWidth  - zoomFactor,
+				.y = 2*zoomFactor*field[i].y/winHeight - zoomFactor,
 			};
 			IR_Eval_Res res = evalUserFunc(root, in);
 			if (!res.succ) break;
@@ -717,6 +720,13 @@ int main(void)
 			field[i].x += v.x/2.0f;
 			field[i].y += v.y/2.0f;
 			field[i].lifetime--;
+		}
+
+		float wheelVelocity = GetMouseWheelMove();
+		if (wheelVelocity == 0.0f) wheelVelocity = lenVector2(GetGesturePinchVector());
+		if (wheelVelocity) {
+			zoomFactor -= 0.3f * wheelVelocity;
+			zoomFactor = CLAMP(zoomFactor, 0.01f, 1000.0f);
 		}
 
 		inputBox.label.bounds.width = winWidth;
