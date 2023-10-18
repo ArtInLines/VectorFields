@@ -48,7 +48,12 @@ When changing the function, you have currently access to the following functions
 -   `cos`: Takes one argument and computes the cosine of that value
 -   `tan`: Takes one argument and computes the tangent of that value
 
-Furter, you have access to the variables `x` and `y`, which equal the point's current x- and y-coordinate.
+Further, you have access to the following variables:
+
+-   `x`: The current point's x-coordinate
+-   `y`: The current point's y-coordinate
+-   `e`: Euler's number e
+-   `pi`: Pi
 
 ## Inspiration
 

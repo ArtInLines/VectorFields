@@ -19,6 +19,7 @@
 #define i32 int32_t
 #define i64 int64_t
 
+#define E 2.7182818284590452354
 #define FPS 60
 #define CLAMP(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
 
@@ -280,6 +281,14 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 						ir = (IR) { .inst = IR_INST_X, .type = IR_TYPE_FLOAT, .val = {0}, .children = NULL};
 					else if (text[*idx] == 'y')
 						ir = (IR) { .inst = IR_INST_Y, .type = IR_TYPE_FLOAT, .val = {0}, .children = NULL};
+					else if (text[*idx] == 'e')
+						ir = (IR) { .inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = { .f = E }, .children = NULL};
+					else
+						return (Parse_Err){ .msg = "Unknown identifier", .idx = *idx };
+					break;
+				case 2:
+					if (strEq("pi", &text[*idx]))
+						ir = (IR) { .inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = { .f = PI }, .children = NULL};
 					else
 						return (Parse_Err){ .msg = "Unknown identifier", .idx = *idx };
 					break;
