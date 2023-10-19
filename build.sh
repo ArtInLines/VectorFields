@@ -26,4 +26,4 @@ if [[ $1 == "d" ]] || [[ $1 == "-d" ]]; then
 else
 	CFLAGS="$CFLAGS $PROD_FLAGS"
 fi
-gcc $CFLAGS -o bin/VectorFields src/main.c $DEPS
+gcc $CFLAGS -o bin/VectorFields src/helpers.c src/ir.c src/main.c $DEPS

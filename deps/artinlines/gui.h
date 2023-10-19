@@ -13,7 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <float.h>
+
+#ifndef STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
+#endif // STB_IMPLEMENTATION
 
 #if !defined(GUI_MALLOC) && !defined(GUI_FREE)
 #include <stdlib.h>
@@ -21,8 +24,8 @@
 #define GUI_FREE(ptr)    free(ptr)
 #elif !defined(GUI_MALLOC) || !defined(GUI_FREE)
 #error "You must define both GUI_MALLOC and GUI_FREE, or neither."
-#elif !defined(UTIL_MALLOC)
-#define UTIL_MALLOC(size) GUI_MALLOC(size)
+#elif !defined(MALLOC)
+#define MALLOC(size) GUI_MALLOC(size)
 #endif
 
 typedef enum __attribute__((__packed__)) {
@@ -308,7 +311,7 @@ void gui_drawPreparedText(Gui_Drawable_Text text, Gui_El_Style style)
         if ((cp != '\n') && (cp != ' ') && (cp != '\t') && (cp != '\r')) {
             DrawTextCodepoint(style.font, cp, pos, style.font_size, style.color);
         }
-        if (UTIL_UNLIKELY(lineIdx < stbds_arrlen(text.lineOffsets) && i == lastOffset + (i32)text.lineOffsets[lineIdx])) {
+        if (UNLIKELY(lineIdx < stbds_arrlen(text.lineOffsets) && i == lastOffset + (i32)text.lineOffsets[lineIdx])) {
             pos.y += style.font_size + style.lSpacing;
             pos.x  = text.lineXs[xIdx];
             xIdx++;
@@ -354,7 +357,7 @@ Vector2* gui_drawSizedEx(Gui_Drawable_Text text, Rectangle bounds, Gui_El_Style 
         if ((cp != '\n') && (cp != ' ') && (cp != '\t') && (cp != '\r')) {
             DrawTextCodepoint(style.font, cp, pos, style.font_size, style.color);
         }
-        if (UTIL_UNLIKELY(lineIdx < stbds_arrlen(text.lineOffsets) && i == lastOffset + (i32)text.lineOffsets[lineIdx])) {
+        if (UNLIKELY(lineIdx < stbds_arrlen(text.lineOffsets) && i == lastOffset + (i32)text.lineOffsets[lineIdx])) {
             pos.y += style.font_size + style.lSpacing;
             pos.x  = text.lineXs[xIdx];
             xIdx++;

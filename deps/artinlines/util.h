@@ -20,6 +20,9 @@
 #define UTIL_MALLOC(size) malloc(size)
 #endif
 
+#ifndef _UTIL_MACROS_
+#define _UTIL_MACROS_
+
 #define u8  uint8_t
 #define u16 uint16_t
 #define u32 uint32_t
@@ -49,20 +52,24 @@
 // several times in a macro) as well as guaranteed correctness (i.e. no bugs through doing
 // `i++` repeatedly in a macro). The only downside is that the caller of macros might have
 // to put parantheses around their arguments manually sometimes.
-#define UTIL_STRINGIZE2(x) #x
-#define UTIL_STRINGIZE(x) UTIL_STRINGIZE2(x)
-#define UTIL_STR_LINE UTIL_STRINGIZE(__LINE__)
-#define UTIL_MAX(a, b) ((a > b) ? a : b)
-#define UTIL_MIN(a, b) ((a < b) ? a : b)
-#define UTIL_UNLIKELY(expr) __builtin_expect(!!(expr), 0)
-#define UTIL_LIKELY(expr)   __builtin_expect(!!(expr), 1)
-#define UTIL_SWAP(x, y) do { __typeof__(x) _swap_tmp_ = x; x = y; y = _swap_tmp_; } while (0)
-#define UTIL_PANIC(...) do { printf(__VA_ARGS__); printf("\n"); exit(1); } while (0)
-#define UTIL_TODO() do { printf("Hit TODO in " __FILE__ ":" UTIL_STR_LINE "\n"); exit(1); } while(0)
-#define UTIL_UNREACHABLE() do { printf("Reached an unreachable place in " __FILE__ ":" UTIL_STR_LINE "\n"); exit(1); } while(0)
-#define UTIL_STATIC_ASSERT_MSG(expr, msg) { extern int __attribute__((error("assertion failure: '" #msg "' in " __FILE__ ":" STR_LINE))) compile_time_check(); ((expr)?0:compile_time_check()),(void)0; }
-#define UTIL_STATIC_ASSERT(expr) STATIC_ASSERT_MSG(expr, #expr);
+#define STRINGIZE2(x) #x
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STR_LINE STRINGIZE(__LINE__)
+#define MAX(a, b) ((a > b) ? a : b)
+#define MIN(a, b) ((a < b) ? a : b)
+#define CLAMP(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
+#define LERP(t, min, max) (min) + (t)*((max) - (min))
+#define UNLIKELY(expr) __builtin_expect(!!(expr), 0)
+#define LIKELY(expr)   __builtin_expect(!!(expr), 1)
+#define SWAP(x, y) do { __typeof__(x) _swap_tmp_ = x; x = y; y = _swap_tmp_; } while (0)
+#define PANIC(...) do { printf(__VA_ARGS__); printf("\n"); exit(1); } while (0)
+#define TODO() do { printf("Hit TODO in " __FILE__ ":" STR_LINE "\n"); exit(1); } while(0)
+#define UNREACHABLE() do { printf("Reached an unreachable place in " __FILE__ ":" STR_LINE "\n"); exit(1); } while(0)
+#define STATIC_ASSERT_MSG(expr, msg) { extern int __attribute__((error("assertion failure: '" #msg "' in " __FILE__ ":" STR_LINE))) compile_time_check(); ((expr)?0:compile_time_check()),(void)0; }
+#define STATIC_ASSERT(expr) STATIC_ASSERT_MSG(expr, #expr);
+#define GLOBAL_STATIC_ASSERT(expr) extern int __attribute__((error("assertion failure: '" #expr "' in " __FILE__ ":" STR_LINE))) compile_time_check(); ((expr)?0:compile_time_check());
 
+#endif // _UTIL_MACROS_
 
 //////////////////
 // Declarations //

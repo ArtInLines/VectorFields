@@ -37,4 +37,4 @@ if defined DEV (
 ) else (
 	set CFLAGS=%CFLAGS% %PROD_FLAGS%
 )
-gcc %CFLAGS% -o bin/VectorFields src/main.c %DEPS%
+gcc %CFLAGS% -o bin/VectorFields src/main.c src/helpers.c src/ir.c %DEPS%

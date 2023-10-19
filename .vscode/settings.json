@@ -2,6 +2,8 @@
 	"files.associations": {
 		"*.pl": "prolog",
 		"*.rb": "ruby",
-		"stb_ds.h": "c"
+		"stb_ds.h": "c",
+		"gui.h": "c",
+		"util.h": "c"
 	}
 }
