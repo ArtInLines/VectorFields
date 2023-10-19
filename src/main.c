@@ -712,6 +712,9 @@ int main(void)
 			IR_Eval_Res res = evalUserFunc(root, in);
 			if (!res.succ) break;
 			Vector2 v = res.val.v;
+			// To prevent very unpleasant visualizations, where the lines span the whole screen height/width
+			v.x = CLAMP(v.x, -2, 2);
+			v.y = CLAMP(v.y, -2, 2);
 			float len = lenVector2(v);
 			HSLA hsl = {
 				lerp(0.0f, 120.0f/360.0f, CLAMP(1 - len, 0, 1)),
