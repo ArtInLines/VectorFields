@@ -49,6 +49,11 @@ When changing the function, you have currently access to the following functions
 -   `sin`: Takes one argument and computes the sine of that value
 -   `cos`: Takes one argument and computes the cosine of that value
 -   `tan`: Takes one argument and computes the tangent of that value
+-   `max`: Takes the maximum of two arguments
+-   `min`: Takes the minimum of two arguments
+-   `clamp`: Clamps the value `x` by the given `min` and `max` values. Arguments should be provided in the following order: `x min max`
+-   `lerp`: Linearly interpolates between `min` and `max` by the value `t`. Arguments should be provided in the following order: `t min max`
+-   `abs`: Returns the absolute value of the argument
 
 Further, you have access to the following variables:
 
