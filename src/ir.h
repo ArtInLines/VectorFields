@@ -1,17 +1,15 @@
 #ifndef _IR_H_
 #define _IR_H_
 
+#define  AIL_ALL_IMPL
+#include "ail.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
 #include "helpers.h"
-#include "util.h"
-
-#ifndef STB_DS_IMPLEMENTATION
-#include "stb_ds.h"
-#endif
 
 #define E 2.7182818284590452354
+#define MAX_RAND_DEPTH 6
 
 // @Note: Keep instStrs in ir.c up to date with this enum
 typedef enum __attribute__((__packed__)) {
@@ -71,12 +69,14 @@ typedef struct {
 	IR_Val val;
 } IR_Eval_Res;
 
-typedef struct IR {
+typedef struct IR IR;
+AIL_DA_INIT(IR);
+struct IR {
 	IR_Inst inst;
 	IR_Type type;
 	IR_Val val;
-	struct IR *children;  // array of sub IR trees
-} IR;
+	AIL_DA(IR) children;  // array of sub IR trees
+};
 
 typedef struct {
 	char *msg;
@@ -90,27 +90,28 @@ typedef struct {
 } IR_NAMED_TOK_MAP; // Map for tokens that are simple strings
 
 #define NAMED_TOK_MAP { \
-	(IR_NAMED_TOK_MAP){.s = "x",     .ir = (IR){.inst = IR_INST_X,       .type = IR_TYPE_FLOAT, .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "y",     .ir = (IR){.inst = IR_INST_Y,       .type = IR_TYPE_FLOAT, .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "e",     .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = E},  .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "pi",    .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = PI}, .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "**",    .ir = (IR){.inst = IR_INST_POW,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "*",     .ir = (IR){.inst = IR_INST_MUL,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "/",     .ir = (IR){.inst = IR_INST_DIV,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "+",     .ir = (IR){.inst = IR_INST_ADD,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "-",     .ir = (IR){.inst = IR_INST_SUB,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "abs",   .ir = (IR){.inst = IR_INST_ABS,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "sin",   .ir = (IR){.inst = IR_INST_SIN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "cos",   .ir = (IR){.inst = IR_INST_COS,     .type = IR_TYPE_FLOAT, .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "tan",   .ir = (IR){.inst = IR_INST_TAN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "lerp",  .ir = (IR){.inst = IR_INST_LERP,    .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "clamp", .ir = (IR){.inst = IR_INST_CLAMP,   .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "max",   .ir = (IR){.inst = IR_INST_MAX,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "min",   .ir = (IR){.inst = IR_INST_MIN,     .type = IR_TYPE_ANY,   .val = {0},       .children = NULL}}, \
-	(IR_NAMED_TOK_MAP){.s = "vec2",  .ir = (IR){.inst = IR_INST_VEC2,    .type = IR_TYPE_VEC2,  .val = {0},       .children = NULL}}, \
+	(IR_NAMED_TOK_MAP){.s = "x",     .ir = (IR){.inst = IR_INST_X,       .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "y",     .ir = (IR){.inst = IR_INST_Y,       .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "e",     .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = E},  .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "pi",    .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = PI}, .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "**",    .ir = (IR){.inst = IR_INST_POW,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "*",     .ir = (IR){.inst = IR_INST_MUL,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "/",     .ir = (IR){.inst = IR_INST_DIV,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "+",     .ir = (IR){.inst = IR_INST_ADD,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "-",     .ir = (IR){.inst = IR_INST_SUB,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "sin",   .ir = (IR){.inst = IR_INST_SIN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "cos",   .ir = (IR){.inst = IR_INST_COS,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "tan",   .ir = (IR){.inst = IR_INST_TAN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "abs",   .ir = (IR){.inst = IR_INST_ABS,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "lerp",  .ir = (IR){.inst = IR_INST_LERP,    .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "clamp", .ir = (IR){.inst = IR_INST_CLAMP,   .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "max",   .ir = (IR){.inst = IR_INST_MAX,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "min",   .ir = (IR){.inst = IR_INST_MIN,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "vec2",  .ir = (IR){.inst = IR_INST_VEC2,    .type = IR_TYPE_VEC2,  .val = {0},       .children = ail_da_new_empty(IR)}}, \
 }
+#define RAND_PREFERED_NAMED_TOK_MAP_MIN 0
+#define RAND_PREFERED_NAMED_TOK_MAP_LEN 12
 
-void printIRHelper(IR node, i32 indent);
 void printIR(IR node);
 bool isAlpha(char c);
 bool isNum(char c);
@@ -122,5 +123,7 @@ void insertConv(IR *node, i32 idx);
 i32 getExpectedChildAmount(IR_Inst inst);
 bool checkUserFunc(IR *root);
 IR_Eval_Res evalUserFunc(IR node, Vector2 in);
+IR randFunction();
+AIL_DA(char) irToStr(IR node);
 
 #endif // _IR_H_

@@ -28,7 +28,9 @@ All dependencies are packaged in the `deps/` folder and are built along with the
 
 With the mousewheel or by pinching in/out on your touchpad, you can zoom in/out of the Vector Field.
 
-You can also change the function, that is used to create the Vector Field. You will see it applied in real time.
+With `Tab` you can automatically change to function to a random function.
+
+You can also manually change the function, that is used to create the Vector Field. You will see it applied in real time.
 
 Your function needs to be written in a paranthesized [prefix notation](https://en.wikipedia.org/wiki/Polish_notation) (similar to [Lisp](<https://en.wikipedia.org/wiki/Lisp_(programming_language)>)).
 

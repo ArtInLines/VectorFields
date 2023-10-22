@@ -1,0 +1,3 @@
+[submodule "deps/ail"]
+	path = deps/ail
+	url = https://github.com/ArtInLines/ail.git

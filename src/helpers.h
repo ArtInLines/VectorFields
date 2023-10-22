@@ -1,9 +1,10 @@
 #ifndef _HELPERS_H_
 #define _HELPERS_H_
 
+#define  AIL_ALL_IMPL
 #include <math.h>
 #include "raylib.h"
-#include "util.h"
+#include "ail.h"
 
 typedef struct {
 	float h; // Hue        [0, 1]
