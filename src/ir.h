@@ -94,12 +94,12 @@ typedef struct {
 } IR_NAMED_TOK_MAP; // Map for tokens that are simple strings
 
 #define NAMED_TOK_MAP { \
+	(IR_NAMED_TOK_MAP){.s = "xn",    .ir = (IR){.inst = IR_INST_XN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "yn",    .ir = (IR){.inst = IR_INST_YN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "x",     .ir = (IR){.inst = IR_INST_X,       .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "y",     .ir = (IR){.inst = IR_INST_Y,       .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "e",     .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = E},  .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "pi",    .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = PI}, .children = ail_da_new_empty(IR)}}, \
-	(IR_NAMED_TOK_MAP){.s = "xn",    .ir = (IR){.inst = IR_INST_XN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
-	(IR_NAMED_TOK_MAP){.s = "yn",    .ir = (IR){.inst = IR_INST_YN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "**",    .ir = (IR){.inst = IR_INST_POW,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "*",     .ir = (IR){.inst = IR_INST_MUL,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "/",     .ir = (IR){.inst = IR_INST_DIV,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
@@ -117,8 +117,8 @@ typedef struct {
 	(IR_NAMED_TOK_MAP){.s = "min",   .ir = (IR){.inst = IR_INST_MIN,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "vec2",  .ir = (IR){.inst = IR_INST_VEC2,    .type = IR_TYPE_VEC2,  .val = {0},       .children = ail_da_new_empty(IR)}}, \
 }
-#define RAND_PREFERED_NAMED_TOK_MAP_MIN 4
-#define RAND_PREFERED_NAMED_TOK_MAP_LEN 12
+#define RAND_PREFERED_NAMED_TOK_MAP_MIN 0
+#define RAND_PREFERED_NAMED_TOK_MAP_LEN 16
 
 #define RAND_LITERALS { \
     IR_INST_X,       \
