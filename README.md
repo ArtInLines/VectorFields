@@ -55,12 +55,16 @@ When changing the function, you have currently access to the following functions
 -   `min`: Takes the minimum of two arguments
 -   `clamp`: Clamps the value `x` by the given `min` and `max` values. Arguments should be provided in the following order: `x min max`
 -   `lerp`: Linearly interpolates between `min` and `max` by the value `t`. Arguments should be provided in the following order: `t min max`
+-   `sqrt`: Returns the square root of the argument
 -   `abs`: Returns the absolute value of the argument
+-   `log`: Returns the natural logarithm of the argument
 
 Further, you have access to the following variables:
 
--   `x`: The current point's x-coordinate
--   `y`: The current point's y-coordinate
+-   `x`: The point's x-coordinate
+-   `y`: The point's y-coordinate
+-   `xn`: The absolute value of the point's x-coordinate
+-   `yn`: The absolute value of the point's y-coordinate
 -   `e`: Euler's number e
 -   `pi`: Pi
 

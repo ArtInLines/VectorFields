@@ -1,7 +1,7 @@
 #include "ir.h"
 
 // @Note: Keep updated with IR_Inst
-const char *instStrs[] = {"IR_INST_ROOT", "IR_META_INST_FIRST_CHILDLESS", "IR_INST_X", "IR_INST_Y", "IR_INST_LITERAL", "IR_META_INST_LAST_CHILDLESS", "IR_META_INST_FIRST_UNARY", "IR_INST_CONV", "IR_INST_ABS", "IR_META_INST_FIRST_TRIG", "IR_INST_SIN", "IR_INST_COS", "IR_INST_TAN", "IR_META_INST_LAST_TRIG", "IR_META_INST_LAST_UNARY", "IR_META_INST_FIRST_BINARY", "IR_INST_VEC2", "IR_INST_MAX", "IR_INST_MIN", "IR_META_INST_LAST_BINARY", "IR_META_INST_FIRST_TERTIARY", "IR_INST_CLAMP", "IR_INST_LERP", "IR_META_INST_LAST_TERTIARY", "IR_META_INST_FIRST_LASSOC", "IR_INST_ADD", "IR_INST_SUB", "IR_INST_MUL", "IR_INST_DIV", "IR_META_INST_LAST_LASSOC", "IR_META_INST_FIRST_RASSOC", "IR_INST_POW", "IR_META_INST_LAST_RASSOC", "IR_META_INST_LEN"};
+const char *instStrs[] = {"IR_INST_ROOT", "IR_META_INST_FIRST_CHILDLESS", "IR_INST_X", "IR_INST_Y", "IR_INST_LITERAL", "IR_META_INST_LAST_CHILDLESS", "IR_META_INST_FIRST_UNARY", "IR_INST_CONV", "IR_INST_ABS", "IR_INST_SQRT", "IR_INST_LOG", "IR_META_INST_FIRST_TRIG", "IR_INST_SIN", "IR_INST_COS", "IR_INST_TAN", "IR_META_INST_LAST_TRIG", "IR_META_INST_LAST_UNARY", "IR_META_INST_FIRST_BINARY", "IR_INST_VEC2", "IR_INST_MAX", "IR_INST_MIN", "IR_META_INST_LAST_BINARY", "IR_META_INST_FIRST_TERTIARY", "IR_INST_CLAMP", "IR_INST_LERP", "IR_META_INST_LAST_TERTIARY", "IR_META_INST_FIRST_LASSOC", "IR_INST_ADD", "IR_INST_SUB", "IR_INST_MUL", "IR_INST_DIV", "IR_META_INST_LAST_LASSOC", "IR_META_INST_FIRST_RASSOC", "IR_INST_POW", "IR_META_INST_LAST_RASSOC", "IR_META_INST_LEN"};
 
 // @Note: Keep updated with IR_Type
 const char *typeStrs[] = {"IR_TYPE_INT", "IR_TYPE_FLOAT", "IR_TYPE_VEC2", "IR_TYPE_ANY", "IR_TYPE_LEN"};
@@ -177,7 +177,7 @@ void insertConv(IR *node, i32 idx)
 
 i32 getExpectedChildAmount(IR_Inst inst)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 33);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_CHILDLESS < IR_META_INST_LAST_TRIG);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_TRIG < IR_META_INST_LAST_UNARY);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_UNARY < IR_META_INST_LAST_BINARY);
@@ -196,7 +196,7 @@ i32 getExpectedChildAmount(IR_Inst inst)
 // @AIL_TODO: Provide error messages
 bool checkUserFunc(IR *root)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 33);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
 
 	IR_Inst inst    = root->inst;
 	i32 expectedLen = getExpectedChildAmount(inst);
@@ -261,7 +261,7 @@ bool checkUserFunc(IR *root)
 
 IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 33);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
 	switch (node.inst) {
 		case IR_INST_ROOT: {
 			IR_Eval_Res res;
@@ -294,11 +294,17 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 		case IR_INST_Y: {
 			return (IR_Eval_Res){ .val = (IR_Val){.f = in.y}, .succ = true };
 		}
+		case IR_INST_XN: {
+			return (IR_Eval_Res){ .val = (IR_Val){.f = fabsf(in.x)}, .succ = true };
+		}
+		case IR_INST_YN: {
+			return (IR_Eval_Res){ .val = (IR_Val){.f = fabsf(in.y)}, .succ = true };
+		}
 		case IR_INST_LITERAL: {
 			return (IR_Eval_Res){ .val = node.val, .succ = true };
 		}
 		case IR_INST_ABS: {
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+			IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
 			if (!res.succ) return res;
 			switch (node.type) {
 				case IR_TYPE_INT:   res.val.i = abs(res.val.i);   break;
@@ -308,6 +314,16 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 				case IR_TYPE_LEN: AIL_UNREACHABLE();
 			}
 			return res;
+		}
+		case IR_INST_SQRT: {
+            IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
+            if (!res.succ) return res;
+            else return (IR_Eval_Res) { .val = (IR_Val){.f = sqrtf(res.val.f)}, .succ = true };
+		}
+		case IR_INST_LOG: {
+            IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
+            if (!res.succ) return res;
+            else return (IR_Eval_Res) { .val = (IR_Val){.f = logf(res.val.f)}, .succ = true };
 		}
 		case IR_INST_SIN: {
 			if (node.children.len != 1) return (IR_Eval_Res){0};
@@ -477,8 +493,14 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[i], in);
 				if (!res.succ) return res;
 				switch (node.type) {
-					case IR_TYPE_INT:   out.i /= res.val.i; break;
-					case IR_TYPE_FLOAT: out.f /= res.val.f; break;
+					case IR_TYPE_INT:
+					   if (res.val.i == 0) out.i = 0;
+					   else out.i /= res.val.i;
+					   break;
+					case IR_TYPE_FLOAT:
+					   if (res.val.f == 0) out.f = 0;
+					   else out.f /= res.val.f;
+					   break;
 					default: return (IR_Eval_Res){0};
 				}
 			}
@@ -508,16 +530,17 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 void addRandChildren(IR *node, i32 depth)
 {
 	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
+	IR_Inst randLiterals[] = RAND_LITERALS;
 	i32 amount = getExpectedChildAmount(node->inst);
 	if (amount < 0) amount = 2 + (xorshift() % 3);
 	for (i32 i = 0; i < amount; i++) {
 		IR child;
 		if (depth >= MAX_RAND_DEPTH) {
-			IR_Inst inst = (xorshift() % 2) ? IR_INST_X : IR_INST_Y;
+			IR_Inst inst = randLiterals[xorshift() % (sizeof(randLiterals)/sizeof(randLiterals[0]))];
 			child = (IR){ .inst = inst, .type = IR_TYPE_FLOAT, .val = {0}, .children = ail_da_new_empty(IR) };
 		} else {
 			do {
-			    bool getPrefered = (xorshift() % 3) == 0;
+			    bool getPrefered = (xorshift() % 2) == 0;
 			    u32 idx;
 			    if (getPrefered) idx = RAND_PREFERED_NAMED_TOK_MAP_MIN + (xorshift() % RAND_PREFERED_NAMED_TOK_MAP_LEN);
 				else             idx = xorshift() % sizeof(namedTokMap)/sizeof(namedTokMap[0]);

@@ -17,11 +17,15 @@ typedef enum __attribute__((__packed__)) {
 	IR_META_INST_FIRST_CHILDLESS,
 	IR_INST_X,
 	IR_INST_Y,
+	IR_INST_XN,
+	IR_INST_YN,
 	IR_INST_LITERAL,
 	IR_META_INST_LAST_CHILDLESS,
 	IR_META_INST_FIRST_UNARY,
 	IR_INST_CONV, // For converting types
 	IR_INST_ABS,
+	IR_INST_SQRT,
+	IR_INST_LOG,
 	IR_META_INST_FIRST_TRIG,
 	IR_INST_SIN,
 	IR_INST_COS,
@@ -94,11 +98,15 @@ typedef struct {
 	(IR_NAMED_TOK_MAP){.s = "y",     .ir = (IR){.inst = IR_INST_Y,       .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "e",     .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = E},  .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "pi",    .ir = (IR){.inst = IR_INST_LITERAL, .type = IR_TYPE_FLOAT, .val = {.f = PI}, .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "xn",    .ir = (IR){.inst = IR_INST_XN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "yn",    .ir = (IR){.inst = IR_INST_YN,      .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "**",    .ir = (IR){.inst = IR_INST_POW,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "*",     .ir = (IR){.inst = IR_INST_MUL,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "/",     .ir = (IR){.inst = IR_INST_DIV,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "+",     .ir = (IR){.inst = IR_INST_ADD,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "-",     .ir = (IR){.inst = IR_INST_SUB,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "sqrt",  .ir = (IR){.inst = IR_INST_SQRT,    .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "log",   .ir = (IR){.inst = IR_INST_LOG,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "sin",   .ir = (IR){.inst = IR_INST_SIN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "cos",   .ir = (IR){.inst = IR_INST_COS,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "tan",   .ir = (IR){.inst = IR_INST_TAN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
@@ -109,8 +117,17 @@ typedef struct {
 	(IR_NAMED_TOK_MAP){.s = "min",   .ir = (IR){.inst = IR_INST_MIN,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "vec2",  .ir = (IR){.inst = IR_INST_VEC2,    .type = IR_TYPE_VEC2,  .val = {0},       .children = ail_da_new_empty(IR)}}, \
 }
-#define RAND_PREFERED_NAMED_TOK_MAP_MIN 0
+#define RAND_PREFERED_NAMED_TOK_MAP_MIN 4
 #define RAND_PREFERED_NAMED_TOK_MAP_LEN 12
+
+#define RAND_LITERALS { \
+    IR_INST_X,       \
+	IR_INST_Y,       \
+	IR_INST_LITERAL, \
+	IR_INST_LITERAL, \
+	IR_INST_XN,      \
+	IR_INST_YN,      \
+}
 
 void printIR(IR node);
 bool isAlpha(char c);
