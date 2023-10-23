@@ -66,6 +66,7 @@ int main(void)
 	SetGesturesEnabled(GESTURE_PINCH_IN | GESTURE_PINCH_OUT);
 	float zoomFactor = 10.0f;
 
+    float hueOffset = 0;
 	float hideHUDAfter = 5.0f; // in seconds
 	float hideHUDSecs  = 0.0f;
 
@@ -96,16 +97,17 @@ int main(void)
             v.x = AIL_CLAMP(v.x, -2, 2);
             v.y = AIL_CLAMP(v.y, -2, 2);
 			float len = lenVector2((Vector2){v.x/2.0f, v.y/2.0f});
-			HSLA hsl = {
-				AIL_LERP(AIL_CLAMP(len, 0, 1), 30.0f, 200.0f),
-				AIL_LERP(AIL_CLAMP(len, 0, 1),   0.5f, 1.0f),
-				1.0f,
-			};
-			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, ColorFromHSV(hsl.h, hsl.s, hsl.l));
+			float h   = hueOffset + AIL_LERP(AIL_CLAMP(len, 0, 1), 0.0f, 60.0f);
+			if (h > 360.0f) h -= 360.0f;
+			float s   = AIL_LERP(AIL_CLAMP(len, 0, 1), 0.5f, 1.0f);
+			float l   = 1.0;
+			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, ColorFromHSV(h, s, l));
 			field[i].x += v.x/2.0f;
 			field[i].y += v.y/2.0f;
 			field[i].lifetime--;
 		}
+		hueOffset += 0.1f;
+		if (AIL_UNLIKELY(hueOffset > 360.0f)) hueOffset = 0.0f;
 
 		float wheelVelocity = GetMouseWheelMove();
 		if (wheelVelocity == 0.0f) wheelVelocity = lenVector2(GetGesturePinchVector());
