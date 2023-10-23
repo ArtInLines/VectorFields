@@ -6,7 +6,22 @@ Each point's vector is computed via a function, that you can change yourself.
 
 ## Demo
 
+Disclaimer: The colors have changed by now, but I didn't bother to re-record yet. The functioning of the app is still the same as in the recording shown below.
+
 ![Demo Gif](./docs/changing-func-demo.gif)
+
+## Installing
+
+There are pre-built binaries for Windows x86_64, which you can find in the release tab on the side. The app should also run on most other operating systems, but you will have to build it yourself then (see below for instructions).
+
+Simply download and extract the zip file and run the `VectorFields.exe`.
+
+If you want to use the app as your screen-saver, you must follow the following steps:
+1.  Download and extract the zip as usual. You can store the files wherever you want
+2.  Rename `VectorFields.exe` to `VectorFields.scr`
+3.  Right-Click on `VectorFields.scr` and click `install`. The app might start, but you can just close it. There should also be a window letting you decide after how many minutes you want the screen saver to appear.
+4.  You need to copy the `assets` folder to `C:/Windows/System32` so Windows can find the correct font. Otherwise the font will look very weird.
+5.  Enjoy your screen-saver. You can interact with the app as usual. You exit the screen-saver by exiting the application (via Escape)
 
 ## Building
 
@@ -25,7 +40,9 @@ All dependencies are packaged in the `deps/` folder and are built along with the
 
 ## Usage
 
-With the mousewheel or by pinching in/out on your touchpad, you can zoom in/out of the Vector Field.
+To exit the application, press `Escape`.
+
+By scrolling or by pinching in/out on your touchpad, you can zoom in/out of the Vector Field.
 
 With `Tab` you can automatically change to function to a random function.
 
@@ -37,7 +54,7 @@ The variables `x` and `y` correspond to the x- and y-coordinates of the points i
 
 The result needs to be a 2D vector (constructed with `vec2`), which describes the direction by which the given point moves.
 
-The length of the resulting vector influences the color with which it is drawn. The longer the vector, the more red and saturated it gets.
+The length of the resulting vector influences the color with which it is drawn. The longer the vector, the more blue and saturated it becomes.
 
 When changing the function, you have currently access to the following functions:
 
