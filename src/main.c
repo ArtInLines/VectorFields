@@ -89,16 +89,15 @@ int main(void)
 			if (!res.succ) break;
 			Vector2 v = res.val.v;
 			// To prevent very unpleasant visualizations, where the lines span the whole screen height/width
-			v.x = AIL_CLAMP(v.x, -2, 2);
-			v.y = AIL_CLAMP(v.y, -2, 2);
+            v.x = AIL_CLAMP(v.x, -2, 2);
+            v.y = AIL_CLAMP(v.y, -2, 2);
 			float len = lenVector2((Vector2){v.x/2.0f, v.y/2.0f});
 			HSLA hsl = {
-				AIL_LERP(AIL_CLAMP(1-len, 0, 1), 0.0f, 120.0f/360.0f),
+				AIL_LERP(AIL_CLAMP(len, 0, 1), 30.0f, 200.0f),
 				AIL_LERP(AIL_CLAMP(len, 0, 1),   0.5f, 1.0f),
-				0.5f,
-				255
+				1.0f,
 			};
-			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, hslToRGB(hsl));
+			DrawLine(field[i].x, field[i].y, field[i].x + v.x, field[i].y + v.y, ColorFromHSV(hsl.h, hsl.s, hsl.l));
 			field[i].x += v.x/2.0f;
 			field[i].y += v.y/2.0f;
 			field[i].lifetime--;
