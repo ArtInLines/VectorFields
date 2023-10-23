@@ -22,7 +22,7 @@ if defined BUILD_ALL (
 	xcopy assets\ bin\assets\ /E /Q
 	:: Build raylib
 	cd deps/raylib/src
-	make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_RELEASE_PATH=../../../bin RAYLIB_BUILD_MODE=DEBUG
+	make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=STATIC RAYLIB_RELEASE_PATH=../../../bin RAYLIB_BUILD_MODE=RELEASE
 	cd ../../..
 )
 

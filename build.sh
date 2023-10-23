@@ -14,7 +14,7 @@ if [[ $1 == "a" ]] || [ ! -d "./bin" ]; then
 	cp -r "./assets" "./bin/assets"
 	# Build raylib
 	cd deps/raylib/src
-	make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_RELEASE_PATH=../../../bin RAYLIB_BUILD_MODE=DEBUG
+	make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=STATIC RAYLIB_RELEASE_PATH=../../../bin RAYLIB_BUILD_MODE=RELEASE
 	cd ../../..
 fi
 
