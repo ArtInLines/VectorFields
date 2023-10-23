@@ -21,8 +21,7 @@ All dependencies are packaged in the `deps/` folder and are built along with the
 ## Dependencies
 
 -   [raylib](https://github.com/raysan5/raylib) to draw shapes onto the screen in a cross-platform way
--   [stb_ds](https://github.com/nothings/stb/blob/master/stb_ds.h) to have dynamic arrays
--   [artinlines](./deps/artinlines/) a library for some utility functions and gui stuff in raylib, that I wrote myself
+-   [ail](https://gthub.com/ArtInLines/ail) for ui and common utilities that I wrote myself
 
 ## Usage
 
