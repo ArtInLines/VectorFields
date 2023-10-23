@@ -20,8 +20,8 @@ typedef struct {
 	u8 lifetime;
 } Particle;
 
-static i32 winWidth  = 1200;
-static i32 winHeight =  800;
+static i32 winWidth;
+static i32 winHeight;
 static Gui_Input_Box inputBox;
 static char *defaultFunc = "(vec2 (sin (+ x y)) (cos (* x y)))";
 
@@ -38,7 +38,7 @@ int main(void)
 {
     Particle *field = malloc(N * sizeof(Particle));
 
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_FULLSCREEN_MODE | FLAG_BORDERLESS_WINDOWED_MODE);
 	InitWindow(winWidth, winHeight, "Vector Fields");
     SetTargetFPS(FPS);
 	Font font = LoadFontEx("./assets/Roboto-Regular.ttf", 40, NULL, 94);
@@ -68,6 +68,10 @@ int main(void)
 
 	float hideHUDAfter = 5.0f; // in seconds
 	float hideHUDSecs  = 0.0f;
+
+	winWidth  = GetScreenWidth();
+	winHeight = GetScreenHeight();
+	SetWindowSize(winWidth, winHeight);
 
 	while (!WindowShouldClose()) {
 		BeginDrawing();
