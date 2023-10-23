@@ -90,19 +90,3 @@ I got the idea for this project after seeing the [anvaka](https://github.com/anv
 
 -   anvaka's "Fieldplay": [Website](https://anvaka.github.io/fieldplay/); [Source](https://github.com/anvaka/fieldplay)
 -   LowByteProduction's "Flow-Fields": [YouTube Video](https://www.youtube.com/watch?v=M_SUcX66SDA&t); [Source](https://github.com/lowbyteproductions/flow-fields)
-
-## Roadmap
-
-The main features of the app are working, but there are several additional features that would be nice to have and some UX issues that could be fixed.
-
-I will probably not work on this for some time, but the following represents (in no particular order) what I see as the most urgent things to improve. If anyone else feels like doing these, feel free to create a pull request!
-
--   [ ] Vertical lines in visualization (potential bug?) should be removed
--   [ ] Clear screen after resizing
--   [ ] Prevent fade-out of input box after it resizes
--   [ ] Change input to infix notation
--   [ ] Offer more capabilities to input language (e.g. variables, functions)
--   [ ] Offer toggle for fullscreen
--   [ ] Move computations to GPU
--   [ ] Allow user to change the amount of simulated particles
--   [ ] Add ability to render the current animation to a (looping?) video/gif (probably by using ffmpeg behind the scenes)
