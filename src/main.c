@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "rlgl.h"
 #define AIL_ALL_IMPL
 #define AIL_GUI_IMPL
 #include "ail.h"
@@ -34,6 +35,16 @@ static IR updatedRoot;
 static AIL_Gui_Input_Box inputBox;
 static char *defaultFunc = "(vec2 (sin (+ x y)) (cos (* x y)))";
 
+
+bool isKeyPressedPopped(KeyboardKey key)
+{
+    if (IsKeyPressed(key)) {
+        GetKeyPressed();
+        GetCharPressed();
+        return true;
+    }
+    return false;
+}
 
 void toggleFullscreen(void)
 {
@@ -185,8 +196,29 @@ int main(void)
 
         if (showField) {
             if (!inputBox.selected) {
-                if (IsKeyPressed(KEY_F)) toggleFullscreen();
-                else if (IsKeyPressed(KEY_ESCAPE)) {
+                if (isKeyPressedPopped(KEY_F)) toggleFullscreen();
+                else if (isKeyPressedPopped(KEY_P)) {
+                    const char pathPrefix[] = "./screenshot-";
+                    char path[sizeof(pathPrefix) + 7] = {0};
+                    memcpy(path, pathPrefix, sizeof(pathPrefix));
+                    i32 i = 1;
+                    do {
+                        path[sizeof(pathPrefix) - 1] = i > 100 ? (i-=100) + '0' : '0';
+                        path[sizeof(pathPrefix) + 0] = i > 10  ? (i-=10)  + '0' : '0';
+                        path[sizeof(pathPrefix) + 1] = i + '0';
+                        path[sizeof(pathPrefix) + 2] = '.';
+                        path[sizeof(pathPrefix) + 3] = 'p';
+                        path[sizeof(pathPrefix) + 4] = 'n';
+                        path[sizeof(pathPrefix) + 5] = 'g';
+                        path[sizeof(pathPrefix) + 6] = 0;
+                        i++;
+                    } while (FileExists(path));
+                    printf("%s\n", path);
+                    u8 *pixels = rlReadScreenPixels(fieldWidth, fieldHeight);
+                    Image img  = { pixels, fieldWidth, fieldHeight, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
+                    ExportImage(img, path);
+                }
+                else if (isKeyPressedPopped(KEY_ESCAPE)) {
                     if (IsWindowState(FLAG_FULLSCREEN_MODE)) toggleFullscreen();
                     else break;
                 }

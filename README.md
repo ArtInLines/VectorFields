@@ -42,7 +42,9 @@ All dependencies are packaged in the `deps/` folder and are built along with the
 
 To exit the application, press `F4` or `Escape` when the input box is not selected. After waiting 5 seconds, the input box will hide automatically and be deselected. You can also press `Escape` or click somewhere else to deselect it.
 
-When the input box is not selected, you can also press `F` to toggle fullscreen.
+When the input box is not selected, you can press `F` to toggle fullscreen.
+
+When the input box is not selected, you can press `P` to make a screenshot. The screenshot will be stored in your current working directory (which usually should be the same folder that the executable is in).
 
 By scrolling or by pinching in/out on your touchpad, you can zoom in/out of the Vector Field.
 
