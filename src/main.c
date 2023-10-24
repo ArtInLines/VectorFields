@@ -120,6 +120,7 @@ void drawVectorField(void)
                         )
         || (IsAnyKeyPressed() && !IsKeyPressed(KEY_TAB))) {
         hideHUDSecs = 0;
+        inputBox.selected = true;
     } else {
         hideHUDSecs += GetFrameTime();
     }
