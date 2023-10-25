@@ -30,6 +30,15 @@ Vector2 subVector2(Vector2 a, Vector2 b)
 	};
 }
 
+// @Study: Is this really the right semantic for modVector?
+Vector2 modVector2(Vector2 a, Vector2 b)
+{
+    return (Vector2) {
+        .x = fmodf(a.x, b.x),
+        .y = fmodf(a.y, b.y),
+    };
+}
+
 float lenVector2(Vector2 v)
 {
 	return sqrtf(v.x*v.x + v.y*v.y);

@@ -1,7 +1,7 @@
 #include "ir.h"
 
 // @Note: Keep updated with IR_Inst
-const char *instStrs[] = {"IR_INST_ROOT", "IR_META_INST_FIRST_CHILDLESS", "IR_INST_X", "IR_INST_Y", "IR_INST_LITERAL", "IR_META_INST_LAST_CHILDLESS", "IR_META_INST_FIRST_UNARY", "IR_INST_CONV", "IR_INST_ABS", "IR_INST_SQRT", "IR_INST_LOG", "IR_META_INST_FIRST_TRIG", "IR_INST_SIN", "IR_INST_COS", "IR_INST_TAN", "IR_META_INST_LAST_TRIG", "IR_META_INST_LAST_UNARY", "IR_META_INST_FIRST_BINARY", "IR_INST_VEC2", "IR_INST_MAX", "IR_INST_MIN", "IR_META_INST_LAST_BINARY", "IR_META_INST_FIRST_TERTIARY", "IR_INST_CLAMP", "IR_INST_LERP", "IR_META_INST_LAST_TERTIARY", "IR_META_INST_FIRST_LASSOC", "IR_INST_ADD", "IR_INST_SUB", "IR_INST_MUL", "IR_INST_DIV", "IR_META_INST_LAST_LASSOC", "IR_META_INST_FIRST_RASSOC", "IR_INST_POW", "IR_META_INST_LAST_RASSOC", "IR_META_INST_LEN"};
+const char *instStrs[] = {"IR_INST_ROOT", "IR_META_INST_FIRST_CHILDLESS", "IR_INST_X", "IR_INST_Y", "IR_INST_LITERAL", "IR_META_INST_LAST_CHILDLESS", "IR_META_INST_FIRST_UNARY", "IR_INST_CONV", "IR_INST_ABS", "IR_INST_SQRT", "IR_INST_LOG", "IR_META_INST_FIRST_TRIG", "IR_INST_SIN", "IR_INST_COS", "IR_INST_TAN", "IR_META_INST_LAST_TRIG", "IR_META_INST_LAST_UNARY", "IR_META_INST_FIRST_BINARY", "IR_INST_VEC2", "IR_INST_MAX", "IR_INST_MIN", "IR_META_INST_LAST_BINARY", "IR_META_INST_FIRST_TERTIARY", "IR_INST_CLAMP", "IR_INST_LERP", "IR_META_INST_LAST_TERTIARY", "IR_META_INST_FIRST_LASSOC", "IR_INST_ADD", "IR_INST_SUB", "IR_INST_MOD", "IR_INST_MUL", "IR_INST_DIV", "IR_META_INST_LAST_LASSOC", "IR_META_INST_FIRST_RASSOC", "IR_INST_POW", "IR_META_INST_LAST_RASSOC", "IR_META_INST_LEN"};
 
 // @Note: Keep updated with IR_Type
 const char *typeStrs[] = {"IR_TYPE_INT", "IR_TYPE_FLOAT", "IR_TYPE_VEC2", "IR_TYPE_ANY", "IR_TYPE_LEN"};
@@ -41,9 +41,9 @@ bool isNum(char c)
 bool isOp(char c)
 {
 	// Asserts exist, bc we assume that only '+', '-', '*', '/' and '**' exist as operators
-	AIL_STATIC_ASSERT(IR_META_INST_LAST_LASSOC - IR_META_INST_FIRST_LASSOC - 1 == 4);
+	AIL_STATIC_ASSERT(IR_META_INST_LAST_LASSOC - IR_META_INST_FIRST_LASSOC - 1 == 5);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_RASSOC - IR_META_INST_FIRST_RASSOC - 1 == 1);
-	return c == '+' || c == '-' || c == '*' || c == '/';
+	return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
 }
 
 // Unlike strcmp only `a` needs to be null-terminated
@@ -177,7 +177,7 @@ void insertConv(IR *node, i32 idx)
 
 i32 getExpectedChildAmount(IR_Inst inst)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_CHILDLESS < IR_META_INST_LAST_TRIG);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_TRIG < IR_META_INST_LAST_UNARY);
 	AIL_STATIC_ASSERT(IR_META_INST_LAST_UNARY < IR_META_INST_LAST_BINARY);
@@ -196,7 +196,7 @@ i32 getExpectedChildAmount(IR_Inst inst)
 // @AIL_TODO: Provide error messages
 bool checkUserFunc(IR *root)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
 
 	IR_Inst inst    = root->inst;
 	i32 expectedLen = getExpectedChildAmount(inst);
@@ -261,7 +261,7 @@ bool checkUserFunc(IR *root)
 
 IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 {
-	AIL_STATIC_ASSERT(IR_META_INST_LEN == 37);
+	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
 	switch (node.inst) {
 		case IR_INST_ROOT: {
 			IR_Eval_Res res;
@@ -448,6 +448,23 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 					case IR_TYPE_INT:   out.i -= res.val.i;                    break;
 					case IR_TYPE_FLOAT: out.f -= res.val.f;                    break;
 					case IR_TYPE_VEC2:  out.v  = subVector2(out.v, res.val.v); break;
+					default: return (IR_Eval_Res){0};
+				}
+			}
+			return (IR_Eval_Res){ .val = out, .succ = true };
+		}
+		case IR_INST_MOD: {
+			if (!node.children.len) return (IR_Eval_Res){0};
+			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+			if (node.children.len == 1 || !res.succ) return res;
+			IR_Val out = res.val;
+			for (u32 i = 1; i < node.children.len; i++) {
+				res = evalUserFunc(((IR *)node.children.data)[i], in);
+				if (!res.succ) return res;
+				switch (node.type) {
+					case IR_TYPE_INT:   out.i %= res.val.i;                    break;
+					case IR_TYPE_FLOAT: out.f  = fmodf(out.f, res.val.f);      break;
+					case IR_TYPE_VEC2:  out.v  = modVector2(out.v, res.val.v); break;
 					default: return (IR_Eval_Res){0};
 				}
 			}

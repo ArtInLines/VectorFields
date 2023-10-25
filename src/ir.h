@@ -46,6 +46,7 @@ typedef enum __attribute__((__packed__)) {
 	IR_INST_SUB,
 	IR_INST_MUL,
 	IR_INST_DIV,
+	IR_INST_MOD,
 	IR_META_INST_LAST_LASSOC,
 	IR_META_INST_FIRST_RASSOC,
 	IR_INST_POW,
@@ -105,6 +106,7 @@ typedef struct {
 	(IR_NAMED_TOK_MAP){.s = "/",     .ir = (IR){.inst = IR_INST_DIV,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "+",     .ir = (IR){.inst = IR_INST_ADD,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "-",     .ir = (IR){.inst = IR_INST_SUB,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
+	(IR_NAMED_TOK_MAP){.s = "%",     .ir = (IR){.inst = IR_INST_MOD,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "sqrt",  .ir = (IR){.inst = IR_INST_SQRT,    .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "log",   .ir = (IR){.inst = IR_INST_LOG,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "sin",   .ir = (IR){.inst = IR_INST_SIN,     .type = IR_TYPE_FLOAT, .val = {0},       .children = ail_da_new_empty(IR)}}, \
@@ -117,8 +119,9 @@ typedef struct {
 	(IR_NAMED_TOK_MAP){.s = "min",   .ir = (IR){.inst = IR_INST_MIN,     .type = IR_TYPE_ANY,   .val = {0},       .children = ail_da_new_empty(IR)}}, \
 	(IR_NAMED_TOK_MAP){.s = "vec2",  .ir = (IR){.inst = IR_INST_VEC2,    .type = IR_TYPE_VEC2,  .val = {0},       .children = ail_da_new_empty(IR)}}, \
 }
+// @Cleanup: This is rly messy tbh
 #define RAND_PREFERED_NAMED_TOK_MAP_MIN 0
-#define RAND_PREFERED_NAMED_TOK_MAP_LEN 16
+#define RAND_PREFERED_NAMED_TOK_MAP_LEN 17
 
 #define RAND_LITERALS { \
     IR_INST_X,       \

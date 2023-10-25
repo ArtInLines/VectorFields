@@ -67,6 +67,7 @@ When changing the function, you have currently access to the following functions
 -   `-`: Subtracts as many operands as provided from the first operand. If only one operand was provided, it negates said operand instead
 -   `*`: Multiplies as many operands as provided
 -   `/`: Divides as many operands as provided from the first operand. If only one operand was provided, it's multiplicative inverse is created instead
+-   `%`: Calculates the remainder after dividing the second from the first operand
 -   `**`: Raises the first operand by the power of the next operands. As of now, `**` is treated like a left-associative operation instead of a right-associative one as usual in maths
 -   `sin`: Takes one argument and computes the sine of that value
 -   `cos`: Takes one argument and computes the cosine of that value
