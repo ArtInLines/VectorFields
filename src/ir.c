@@ -571,8 +571,8 @@ void addRandChildren(IR *node, i32 depth)
 
 IR randFunction()
 {
-	IR root = { .inst = IR_INST_ROOT, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_with_cap(IR, 1) };
-	IR vec2 = { .inst = IR_INST_VEC2, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_with_cap(IR, 2) };
+	IR root = { .inst = IR_INST_ROOT, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 1) };
+	IR vec2 = { .inst = IR_INST_VEC2, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 2) };
 	addRandChildren(&vec2, 1);
 	ail_da_push(&root.children, vec2);
 	return root;

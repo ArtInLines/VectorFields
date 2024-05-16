@@ -115,7 +115,7 @@ void drawVectorField(void)
     if (IsKeyPressed(KEY_TAB)) {
         root = randFunction();
         checkUserFunc(&root);
-        ail_da_free(inputBox.label.text);
+        ail_da_free(&inputBox.label.text);
         inputBox.label.text = irToStr(root);
     }
 
