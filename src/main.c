@@ -82,11 +82,12 @@ void drawVectorField(void)
     for (u32 i = 0; i < N; i++) {
         if (!field[i].lifetime) field[i] = randParticle();
         // Normalize field value
-        Vector2 in = {
+        Input in = {
             .x = 2*zoomFactor*field[i].x/fieldWidth  - zoomFactor,
             .y = 2*zoomFactor*field[i].y/fieldHeight - zoomFactor,
+            .t = field[i].lifetime,
         };
-        IR_Eval_Res res = evalUserFunc(root, in);
+        IR_Eval_Res res = evalUserFunc(root, in, IR_TYPE_VEC2);
         if (!res.succ) break;
         Vector2 v = res.val.v;
         // To prevent very unpleasant visualizations, where the lines span the whole screen height/width

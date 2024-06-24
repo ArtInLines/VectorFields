@@ -1,32 +1,26 @@
 #include "ir.h"
 
-// @Note: Keep updated with IR_Inst
-const char *instStrs[] = {"IR_INST_ROOT", "IR_META_INST_FIRST_CHILDLESS", "IR_INST_X", "IR_INST_Y", "IR_INST_LITERAL", "IR_META_INST_LAST_CHILDLESS", "IR_META_INST_FIRST_UNARY", "IR_INST_CONV", "IR_INST_ABS", "IR_INST_SQRT", "IR_INST_LOG", "IR_META_INST_FIRST_TRIG", "IR_INST_SIN", "IR_INST_COS", "IR_INST_TAN", "IR_META_INST_LAST_TRIG", "IR_META_INST_LAST_UNARY", "IR_META_INST_FIRST_BINARY", "IR_INST_VEC2", "IR_INST_MAX", "IR_INST_MIN", "IR_META_INST_LAST_BINARY", "IR_META_INST_FIRST_TERTIARY", "IR_INST_CLAMP", "IR_INST_LERP", "IR_META_INST_LAST_TERTIARY", "IR_META_INST_FIRST_LASSOC", "IR_INST_ADD", "IR_INST_SUB", "IR_INST_MOD", "IR_INST_MUL", "IR_INST_DIV", "IR_META_INST_LAST_LASSOC", "IR_META_INST_FIRST_RASSOC", "IR_INST_POW", "IR_META_INST_LAST_RASSOC", "IR_META_INST_LEN"};
+// void printIRHelper(IR node, i32 indent)
+// {
+// 	for (i32 i = 0; i < indent; i++) printf("  ");
+// 	printf("inst: %s, type: %s, val: ", instStrs[node.inst], typeStrs[node.type]);
+// 	AIL_STATIC_ASSERT(IR_TYPE_LEN == 4);
+// 	switch (node.type) {
+// 		case IR_TYPE_INT:   printf("%d", node.val.i); break;
+// 		case IR_TYPE_FLOAT: printf("%f", node.val.f); break;
+// 		case IR_TYPE_VEC2:  printf("(%f, %f)", node.val.v.x, node.val.v.y); break;
+// 		case IR_TYPE_ANY:   printf("-"); break;
+// 		default:            AIL_UNREACHABLE();
+// 	}
+// 	printf("\n");
+// 	for (u32 i = 0; i < node.children.len; i++)
+// 		printIRHelper(((IR *)node.children.data)[i], indent + 1);
+// }
 
-// @Note: Keep updated with IR_Type
-const char *typeStrs[] = {"IR_TYPE_INT", "IR_TYPE_FLOAT", "IR_TYPE_VEC2", "IR_TYPE_ANY", "IR_TYPE_LEN"};
-
-void printIRHelper(IR node, i32 indent)
-{
-	for (i32 i = 0; i < indent; i++) printf("  ");
-	printf("inst: %s, type: %s, val: ", instStrs[node.inst], typeStrs[node.type]);
-	AIL_STATIC_ASSERT(IR_TYPE_LEN == 4);
-	switch (node.type) {
-		case IR_TYPE_INT:   printf("%d", node.val.i); break;
-		case IR_TYPE_FLOAT: printf("%f", node.val.f); break;
-		case IR_TYPE_VEC2:  printf("(%f, %f)", node.val.v.x, node.val.v.y); break;
-		case IR_TYPE_ANY:   printf("-"); break;
-		default:            AIL_UNREACHABLE();
-	}
-	printf("\n");
-	for (u32 i = 0; i < node.children.len; i++)
-		printIRHelper(((IR *)node.children.data)[i], indent + 1);
-}
-
-void printIR(IR node)
-{
-	printIRHelper(node, 0);
-}
+// void printIR(IR node)
+// {
+// 	printIRHelper(node, 0);
+// }
 
 bool isAlpha(char c)
 {
@@ -57,8 +51,6 @@ bool strEq(const char *a, const char *b)
 // The parsed IR is written to node
 Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 {
-	const IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
-
 	bool first = true;
 	for (char c; *idx < len; *idx += 1) {
 		c = text[*idx];
@@ -89,12 +81,9 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 
 			IR ir = {0};
 			bool foundIR = false;
-			for (size_t k = 0; !foundIR && k < sizeof(namedTokMap)/sizeof(namedTokMap[0]); k++) {
-				if (strEq(namedTokMap[k].s, &text[*idx])) {
-					ir = namedTokMap[k].ir;
-					foundIR = true;
-				}
-			}
+			#define X(instr, str, inst_type) if (!foundIR && strEq(str, &text[*idx])) { foundIR = true; ir = (IR){ .inst = instr, .type = inst_type, .val = (IR_Val){0}, .children = ail_da_new_with_cap(IR, 16)}; }
+				INSTRUCTIONS
+			#undef X
 			if (!foundIR) {
 				return (Parse_Err){ .msg = "Unknown identifier", .idx = *idx };
 			}
@@ -108,8 +97,8 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 		}
 		else if (isNum(c) || c == '.') {
 			IR_Val val = {0};
-			bool  isFloat  = false;
-			float decDiv   = 0.1f;
+			float decDiv = 0.1f;
+			bool isFloat = false;
 			do {
 				if (c == '_') {} // Do nothing
 				else if (c == '.') {
@@ -130,7 +119,7 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 
 			IR ir   = {0};
 			ir.inst = IR_INST_LITERAL;
-			ir.type = isFloat ? IR_TYPE_FLOAT : IR_TYPE_INT;
+			ir.type = IR_TYPE_REAL;
 			ir.val  = val;
 			if (first) {
 				first = false;
@@ -164,17 +153,6 @@ Parse_Err parseUserFunc(char *text, i32 textlen, IR *root)
 	return (Parse_Err){0};
 }
 
-void insertConv(IR *node, i32 idx)
-{
-	IR newNode = {0};
-	memcpy(&newNode, &((IR *)node->children.data)[idx], sizeof(IR));
-	((IR *)node->children.data)[idx].children = ail_da_new_empty(IR);
-	ail_da_push(&((IR *)node->children.data)[idx].children, newNode);
-	((IR *)node->children.data)[idx].inst = IR_INST_CONV;
-	((IR *)node->children.data)[idx].type = IR_TYPE_FLOAT;
-	((IR *)node->children.data)[idx].val  = (IR_Val) {0};
-}
-
 i32 getExpectedChildAmount(IR_Inst inst)
 {
 	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
@@ -193,7 +171,7 @@ i32 getExpectedChildAmount(IR_Inst inst)
 	else 									      return -1;
 }
 
-// @AIL_TODO: Provide error messages
+// @TODO: Provide error messages
 bool checkUserFunc(IR *root)
 {
 	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
@@ -209,202 +187,167 @@ bool checkUserFunc(IR *root)
 
 	AIL_STATIC_ASSERT(IR_TYPE_LEN == 4);
 	if (len >= 1) {
-		// Figure out type for operations that take several types
-		if (root->type == IR_TYPE_ANY) {
-			root->type = ((IR *)root->children.data)[0].type;
-			for (i32 i = 1; i < len; i++) {
-				IR_Type t = ((IR *)root->children.data)[i].type;
-				if (t == root->type) continue;
-				switch (t) {
-					case IR_TYPE_INT:
-						if (root->type == IR_TYPE_VEC2) return false;
-						break;
-					case IR_TYPE_FLOAT:
-						if (root->type == IR_TYPE_VEC2) return false;
-						root->type = t;
-						break;
-					default:
-						return false;
-				}
-			}
-		}
-
-		if (inst == IR_INST_VEC2) {
-			for (i32 i = 0; i < len; i++) {
-				IR_Type t = ((IR *)root->children.data)[i].type;
-				switch (t) {
-					case IR_TYPE_INT:   insertConv(root, i); break;
-					case IR_TYPE_FLOAT: break;
-					default:            return false;
-				}
-			}
-		} else {
-			for (i32 i = 0; i < len; i++) {
-				IR_Type t = ((IR *)root->children.data)[i].type;
-				if (t == root->type) continue;
-				switch (t) {
-					case IR_TYPE_INT:
-						if (root->type == IR_TYPE_FLOAT) insertConv(root, i);
-						else return false;
-						break;
-					case IR_TYPE_FLOAT:
-					case IR_TYPE_VEC2:
-						return false;
-					default:
-						AIL_UNREACHABLE();
-				}
-			}
+		for (i32 i = 0; i < len; i++) {
+			IR_Type t = ((IR *)root->children.data)[i].type;
+			if (t == IR_TYPE_VEC2) return false;
 		}
 	}
 	return true;
 }
 
-IR_Eval_Res evalUserFunc(IR node, Vector2 in)
+#define GET_NODE_VALUE(node, t) (((node).type == IR_TYPE_REAL) ? (t)(node).val.f : (t)(node).val.i)
+
+IR_Eval_Res valToDesiredType(IR node, IR_Type desired_type) {
+	IR_Eval_Res res;
+	res.succ = true;
+	switch (desired_type) {
+		case IR_TYPE_VEC2:
+			if (node.type != IR_TYPE_VEC2) {
+				float x = GET_NODE_VALUE(node, float);
+				res.val.v = (Vector2){ .x = x, .y = x };
+			}
+			break;
+		case IR_TYPE_REAL: res.val.f = GET_NODE_VALUE(node, float); break;
+		case IR_TYPE_POS:
+		case IR_TYPE_NAT:  res.val.i = GET_NODE_VALUE(node, int); break;
+		case IR_TYPE_LEN:  res.succ = false;
+	}
+	return res;
+}
+
+IR_Eval_Res evalInt(int x, IR_Type desired_type)
+{
+	IR_Val val;
+	switch (desired_type) {
+		case IR_TYPE_REAL: val.f = (float)x; break;
+		case IR_TYPE_VEC2: val.v = (Vector2){ .x = (float)x, .y = (float)x }; break;
+		default: val.i = x;
+	}
+	return (IR_Eval_Res){ .val = val, .succ = true };
+}
+
+IR_Eval_Res evalFloat(float x, IR_Type desired_type)
+{
+	IR_Val val;
+	switch (desired_type) {
+		case IR_TYPE_REAL: val.f = x; break;
+		case IR_TYPE_VEC2: val.v = (Vector2){ .x = (float)x, .y = (float)x }; break;
+		default: val.i = (int)x;
+	}
+	return (IR_Eval_Res){ .val = val, .succ = true };
+}
+
+#define EVAL_REAL_UNARY_FUNC(func) {                                             \
+		if (node.children.len != 1) return (IR_Eval_Res){0};                     \
+		IR_Eval_Res res = evalUserFunc(node.children.data[0], in, IR_TYPE_REAL); \
+		if (!res.succ) return res;                                               \
+		else return evalFloat(func(res.val.f), desired_type);                    \
+	}
+
+IR_Eval_Res evalUserFunc(IR node, Input in, IR_Type desired_type)
 {
 	AIL_STATIC_ASSERT(IR_META_INST_LEN == 38);
 	switch (node.inst) {
 		case IR_INST_ROOT: {
 			IR_Eval_Res res;
 			for (u32 i = 0; i < node.children.len; i++) {
-				res = evalUserFunc(((IR *)node.children.data)[i], in);
+				res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
 			}
 			return res;
 		}
-		case IR_INST_CONV: {
-			if (node.type != IR_TYPE_FLOAT) AIL_TODO();
-			if (node.children.len > 1) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
-			if (!res.succ) return res;
-			if (((IR *)node.children.data)[0].type != IR_TYPE_FLOAT) res.val.f = (float) res.val.i;
-			return (IR_Eval_Res){ .val = res.val, .succ = true };
-		}
 		case IR_INST_VEC2: {
 			if (node.children.len != 2) return (IR_Eval_Res){0};
-			if (((IR *)node.children.data)[0].type != IR_TYPE_FLOAT || ((IR *)node.children.data)[1].type != IR_TYPE_FLOAT) return (IR_Eval_Res){0};
-			IR_Eval_Res x = evalUserFunc(((IR *)node.children.data)[0], in);
-			IR_Eval_Res y = evalUserFunc(((IR *)node.children.data)[1], in);
+			IR_Eval_Res x = evalUserFunc(node.children.data[0], in, IR_TYPE_REAL);
+			IR_Eval_Res y = evalUserFunc(node.children.data[1], in, IR_TYPE_REAL);
 			if (!x.succ || !y.succ) return (IR_Eval_Res){0};
 			IR_Val val = { .v = (Vector2){ .x = x.val.f, .y = y.val.f, } };
 			return (IR_Eval_Res){ .val = val, .succ = true };
 		}
-		case IR_INST_X: {
-			return (IR_Eval_Res){ .val = (IR_Val){.f = in.x}, .succ = true };
-		}
-		case IR_INST_Y: {
-			return (IR_Eval_Res){ .val = (IR_Val){.f = in.y}, .succ = true };
-		}
-		case IR_INST_XN: {
-			return (IR_Eval_Res){ .val = (IR_Val){.f = fabsf(in.x)}, .succ = true };
-		}
-		case IR_INST_YN: {
-			return (IR_Eval_Res){ .val = (IR_Val){.f = fabsf(in.y)}, .succ = true };
-		}
+		case IR_INST_T: return evalInt(in.t, desired_type);
+		case IR_INST_X: return evalFloat(in.x, desired_type);
+		case IR_INST_Y: return evalFloat(in.y, desired_type);
+		case IR_INST_XN: return evalFloat(fabsf(in.x), desired_type);
+		case IR_INST_YN: return evalFloat(fabsf(in.y), desired_type);
 		case IR_INST_LITERAL: {
-			return (IR_Eval_Res){ .val = node.val, .succ = true };
+			if (node.type == IR_TYPE_REAL) return evalFloat(node.val.f, desired_type);
+			else return evalInt(node.val.i, desired_type);
 		}
 		case IR_INST_ABS: {
-			IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
+			IR_Type type = node.children.data[0].type;
+			IR_Eval_Res res = evalUserFunc(node.children.data[0], in, node.children.data[0].type);
 			if (!res.succ) return res;
-			switch (node.type) {
-				case IR_TYPE_INT:   res.val.i = abs(res.val.i);   break;
-				case IR_TYPE_FLOAT: res.val.f = fabsf(res.val.f); break;
-				case IR_TYPE_VEC2:  res.val.v = (Vector2){.x = fabsf(res.val.v.x), .y = fabsf(res.val.v.y)}; break;
-				case IR_TYPE_ANY:
-				case IR_TYPE_LEN: AIL_UNREACHABLE();
+			switch (type) {
+				case IR_TYPE_VEC2: res.val.v = (Vector2){.x = fabsf(res.val.v.x), .y = fabsf(res.val.v.y)}; break;
+				case IR_TYPE_REAL: res.val.f = fabsf(res.val.f); break;
+				default:           res.val.i = abs(res.val.i);   break;
 			}
 			return res;
 		}
-		case IR_INST_SQRT: {
-            IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
-            if (!res.succ) return res;
-            else return (IR_Eval_Res) { .val = (IR_Val){.f = sqrtf(res.val.f)}, .succ = true };
-		}
-		case IR_INST_LOG: {
-            IR_Eval_Res res = evalUserFunc(node.children.data[0], in);
-            if (!res.succ) return res;
-            else return (IR_Eval_Res) { .val = (IR_Val){.f = logf(res.val.f)}, .succ = true };
-		}
-		case IR_INST_SIN: {
-			if (node.children.len != 1) return (IR_Eval_Res){0};
-			if (((IR *)node.children.data)[0].type != IR_TYPE_FLOAT) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
-			if (!res.succ) return res;
-			return (IR_Eval_Res) { .val = (IR_Val){.f = sinf(res.val.f)}, .succ = true };
-		}
-		case IR_INST_COS: {
-			if (node.children.len != 1) return (IR_Eval_Res){0};
-			if (((IR *)node.children.data)[0].type != IR_TYPE_FLOAT) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
-			if (!res.succ) return res;
-			return (IR_Eval_Res) { .val = (IR_Val){.f = cosf(res.val.f)}, .succ = true };
-		}
-		case IR_INST_TAN: {
-			if (node.children.len != 1) return (IR_Eval_Res){0};
-			if (((IR *)node.children.data)[0].type != IR_TYPE_FLOAT) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
-			if (!res.succ) return res;
-			return (IR_Eval_Res) { .val = (IR_Val){.f = tanf(res.val.f)}, .succ = true };
-		}
+		case IR_INST_SQRT: EVAL_REAL_UNARY_FUNC(sqrtf);
+		case IR_INST_LOG:  EVAL_REAL_UNARY_FUNC(logf);
+		case IR_INST_SIN:  EVAL_REAL_UNARY_FUNC(sinf);
+		case IR_INST_COS:  EVAL_REAL_UNARY_FUNC(cosf);
+		case IR_INST_TAN:  EVAL_REAL_UNARY_FUNC(tanf);
 		case IR_INST_MAX: {
 			if (node.children.len != 2) return (IR_Eval_Res){0};
-			IR_Eval_Res a = evalUserFunc(((IR *)node.children.data)[0], in);
-			IR_Eval_Res b = evalUserFunc(((IR *)node.children.data)[1], in);
+			IR_Eval_Res a = evalUserFunc(node.children.data[0], in, desired_type);
+			IR_Eval_Res b = evalUserFunc(node.children.data[1], in, desired_type);
 			if (!a.succ || !b.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
 			IR_Val v = {0};
-			switch (node.type) {
-				case IR_TYPE_INT:   v.i = AIL_MAX(a.val.i, b.val.i); break;
-				case IR_TYPE_FLOAT: v.f = AIL_MAX(a.val.f, b.val.f); break;
-				case IR_TYPE_VEC2:  AIL_TODO();
-				case IR_TYPE_ANY:
-				case IR_TYPE_LEN:   AIL_UNREACHABLE();
+			switch (desired_type) {
+				case IR_TYPE_NAT:
+				case IR_TYPE_POS:  v.i = AIL_MAX(a.val.i, b.val.i); break;
+				case IR_TYPE_REAL: v.f = AIL_MAX(a.val.f, b.val.f); break;
+				case IR_TYPE_VEC2: AIL_TODO();
+				case IR_TYPE_LEN:  AIL_UNREACHABLE();
 			}
 			return (IR_Eval_Res) { .val = v, .succ = true };
 		}
 		case IR_INST_MIN: {
 			if (node.children.len != 2) return (IR_Eval_Res){0};
-			IR_Eval_Res a = evalUserFunc(((IR *)node.children.data)[0], in);
-			IR_Eval_Res b = evalUserFunc(((IR *)node.children.data)[1], in);
+			IR_Eval_Res a = evalUserFunc(node.children.data[0], in, desired_type);
+			IR_Eval_Res b = evalUserFunc(node.children.data[1], in, desired_type);
 			if (!a.succ || !b.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
 			IR_Val v = {0};
-			switch (node.type) {
-				case IR_TYPE_INT:   v.i = AIL_MIN(a.val.i, b.val.i); break;
-				case IR_TYPE_FLOAT: v.f = AIL_MIN(a.val.f, b.val.f); break;
-				case IR_TYPE_VEC2:  AIL_TODO();
-				case IR_TYPE_ANY:
-				case IR_TYPE_LEN:   AIL_UNREACHABLE();
+			switch (desired_type) {
+				case IR_TYPE_NAT:
+				case IR_TYPE_POS:  v.i = AIL_MIN(a.val.i, b.val.i); break;
+				case IR_TYPE_REAL: v.f = AIL_MIN(a.val.f, b.val.f); break;
+				case IR_TYPE_VEC2: AIL_TODO();
+				case IR_TYPE_LEN:  AIL_UNREACHABLE();
 			}
 			return (IR_Eval_Res) { .val = v, .succ = true };
 		}
 		case IR_INST_CLAMP: {
 			if (node.children.len != 3) return (IR_Eval_Res){0};
-			IR_Eval_Res a = evalUserFunc(((IR *)node.children.data)[0], in);
-			IR_Eval_Res b = evalUserFunc(((IR *)node.children.data)[1], in);
-			IR_Eval_Res c = evalUserFunc(((IR *)node.children.data)[2], in);
-			if (!a.succ || !b.succ || !c.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
+			IR_Eval_Res a = evalUserFunc(node.children.data[0], in, desired_type);
+			IR_Eval_Res b = evalUserFunc(node.children.data[1], in, desired_type);
+			IR_Eval_Res c = evalUserFunc(node.children.data[2], in, desired_type);
+			if (!a.succ || !b.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
 			IR_Val v = {0};
-			switch (node.type) {
-				case IR_TYPE_INT:   v.i = AIL_CLAMP(a.val.i, b.val.i, c.val.i); break;
-				case IR_TYPE_FLOAT: v.f = AIL_CLAMP(a.val.f, b.val.f, c.val.f); break;
-				case IR_TYPE_VEC2:  AIL_TODO();
-				case IR_TYPE_ANY:
-				case IR_TYPE_LEN:   AIL_UNREACHABLE();
+			switch (desired_type) {
+				case IR_TYPE_NAT:
+				case IR_TYPE_POS:  v.i = AIL_CLAMP(a.val.i, b.val.i, c.val.i); break;
+				case IR_TYPE_REAL: v.f = AIL_CLAMP(a.val.f, b.val.f, c.val.f); break;
+				case IR_TYPE_VEC2: AIL_TODO();
+				case IR_TYPE_LEN:  AIL_UNREACHABLE();
 			}
 			return (IR_Eval_Res) { .val = v, .succ = true };
 		}
 		case IR_INST_LERP: {
 			if (node.children.len != 3) return (IR_Eval_Res){0};
-			IR_Eval_Res a = evalUserFunc(((IR *)node.children.data)[0], in);
-			IR_Eval_Res b = evalUserFunc(((IR *)node.children.data)[1], in);
-			IR_Eval_Res c = evalUserFunc(((IR *)node.children.data)[2], in);
-			if (!a.succ || !b.succ || !c.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
+			IR_Eval_Res a = evalUserFunc(node.children.data[0], in, desired_type);
+			IR_Eval_Res b = evalUserFunc(node.children.data[1], in, desired_type);
+			IR_Eval_Res c = evalUserFunc(node.children.data[2], in, desired_type);
+			if (!a.succ || !b.succ) return (IR_Eval_Res){ .val = {0}, .succ = false };
 			IR_Val v = {0};
-			switch (node.type) {
-				case IR_TYPE_INT:   v.i = AIL_LERP(a.val.i, b.val.i, c.val.i); break;
-				case IR_TYPE_FLOAT: v.f = AIL_LERP(a.val.f, b.val.f, c.val.f); break;
-				case IR_TYPE_VEC2:  AIL_TODO();
-				case IR_TYPE_ANY:
-				case IR_TYPE_LEN:   AIL_UNREACHABLE();
+			switch (desired_type) {
+				case IR_TYPE_NAT:
+				case IR_TYPE_POS:  v.i = AIL_LERP(a.val.i, b.val.i, c.val.i); break;
+				case IR_TYPE_REAL: v.f = AIL_LERP(a.val.f, b.val.f, c.val.f); break;
+				case IR_TYPE_VEC2: AIL_TODO();
+				case IR_TYPE_LEN:  AIL_UNREACHABLE();
 			}
 			return (IR_Eval_Res) { .val = v, .succ = true };
 		}
@@ -412,14 +355,14 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 			if (!node.children.len) return (IR_Eval_Res){0};
 			IR_Val out = {0};
 			for (u32 i = 0; i < node.children.len; i++) {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[i], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:   out.i += res.val.i; break;
-					case IR_TYPE_FLOAT: out.f += res.val.f; break;
-					case IR_TYPE_VEC2:  out.v = addVector2(out.v, res.val.v); break;
-					default:
-						return (IR_Eval_Res){0};
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out.i += res.val.i; break;
+					case IR_TYPE_REAL: out.f += res.val.f; break;
+					case IR_TYPE_VEC2: out.v = addVector2(out.v, res.val.v); break;
+					default: return (IR_Eval_Res){0};
 				}
 			}
 			return (IR_Eval_Res){ .val = out, .succ = true };
@@ -429,25 +372,27 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 			u32 i = 0;
 			IR_Val out;
 			if (node.children.len == 1) {
-				switch (node.type) {
-					case IR_TYPE_INT:   out = (IR_Val){ .i = 0 };            break;
-					case IR_TYPE_FLOAT: out = (IR_Val){ .f = 0.0f };         break;
-					case IR_TYPE_VEC2:  out = (IR_Val){ .v = (Vector2){0} }; break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out = (IR_Val){ .i = 0 };            break;
+					case IR_TYPE_REAL: out = (IR_Val){ .f = 0.0f };         break;
+					case IR_TYPE_VEC2: out = (IR_Val){ .v = (Vector2){0} }; break;
 					default: return (IR_Eval_Res){0};
 				}
 			} else {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[0], in, desired_type);
 				if (!res.succ) return res;
 				out = res.val;
 				i   = 1;
 			}
 			for (; i < node.children.len; i++) {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[i], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:   out.i -= res.val.i;                    break;
-					case IR_TYPE_FLOAT: out.f -= res.val.f;                    break;
-					case IR_TYPE_VEC2:  out.v  = subVector2(out.v, res.val.v); break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out.i -= res.val.i;                    break;
+					case IR_TYPE_REAL: out.f -= res.val.f;                    break;
+					case IR_TYPE_VEC2: out.v  = subVector2(out.v, res.val.v); break;
 					default: return (IR_Eval_Res){0};
 				}
 			}
@@ -455,16 +400,17 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 		}
 		case IR_INST_MOD: {
 			if (!node.children.len) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+			IR_Eval_Res res = evalUserFunc(node.children.data[0], in, desired_type);
 			if (node.children.len == 1 || !res.succ) return res;
 			IR_Val out = res.val;
 			for (u32 i = 1; i < node.children.len; i++) {
-				res = evalUserFunc(((IR *)node.children.data)[i], in);
+				res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:   out.i %= res.val.i;                    break;
-					case IR_TYPE_FLOAT: out.f  = fmodf(out.f, res.val.f);      break;
-					case IR_TYPE_VEC2:  out.v  = modVector2(out.v, res.val.v); break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out.i %= res.val.i;                    break;
+					case IR_TYPE_REAL: out.f  = fmodf(out.f, res.val.f);      break;
+					case IR_TYPE_VEC2: out.v  = modVector2(out.v, res.val.v); break;
 					default: return (IR_Eval_Res){0};
 				}
 			}
@@ -473,18 +419,20 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 		case IR_INST_MUL: {
 			if (!node.children.len) return (IR_Eval_Res){0};
 			IR_Val out;
-			switch (node.type) {
-				case IR_TYPE_INT:   out = (IR_Val){ .i = 1 };                     break;
-				case IR_TYPE_FLOAT: out = (IR_Val){ .f = 1.0f };                  break;
-				case IR_TYPE_VEC2:  out = (IR_Val){ .v = (Vector2){1.0f, 1.0f} }; break;
+			switch (desired_type) {
+				case IR_TYPE_POS:
+				case IR_TYPE_NAT:  out = (IR_Val){ .i = 1 };                     break;
+				case IR_TYPE_REAL: out = (IR_Val){ .f = 1.0f };                  break;
+				case IR_TYPE_VEC2: out = (IR_Val){ .v = (Vector2){1.0f, 1.0f} }; break;
 				default: return (IR_Eval_Res){0};
 			}
 			for (u32 i = 0; i < node.children.len; i++) {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[i], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:   out.i *= res.val.i; break;
-					case IR_TYPE_FLOAT: out.f *= res.val.f; break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out.i *= res.val.i; break;
+					case IR_TYPE_REAL: out.f *= res.val.f; break;
 					default: return (IR_Eval_Res){0};
 				}
 			}
@@ -495,26 +443,28 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 			u32 i = 0;
 			IR_Val out;
 			if (node.children.len == 1) {
-				switch (node.type) {
-					case IR_TYPE_INT:   out = (IR_Val){ .i = 1 };    break;
-					case IR_TYPE_FLOAT: out = (IR_Val){ .f = 1.0f }; break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out = (IR_Val){ .i = 1 };    break;
+					case IR_TYPE_REAL: out = (IR_Val){ .f = 1.0f }; break;
 					default:  return (IR_Eval_Res){0};
 				}
 			} else {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[0], in, desired_type);
 				if (!res.succ) return res;
 				out = res.val;
 				i   = 1;
 			}
 			for (; i < node.children.len; i++) {
-				IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[i], in);
+				IR_Eval_Res res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:
 					   if (res.val.i == 0) out.i = 0;
 					   else out.i /= res.val.i;
 					   break;
-					case IR_TYPE_FLOAT:
+					case IR_TYPE_REAL:
 					   if (res.val.f == 0) out.f = 0;
 					   else out.f /= res.val.f;
 					   break;
@@ -525,15 +475,16 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 		}
 		case IR_INST_POW: {
 			if (node.children.len < 2) return (IR_Eval_Res){0};
-			IR_Eval_Res res = evalUserFunc(((IR *)node.children.data)[0], in);
+			IR_Eval_Res res = evalUserFunc(node.children.data[0], in, desired_type);
 			if (!res.succ) return res;
 			IR_Val out = res.val;
 			for (u32 i = 1; i < node.children.len; i++) {
-				res = evalUserFunc(((IR *)node.children.data)[i], in);
+				res = evalUserFunc(node.children.data[i], in, desired_type);
 				if (!res.succ) return res;
-				switch (node.type) {
-					case IR_TYPE_INT:   out.i = powi(out.i, res.val.i); break;
-					case IR_TYPE_FLOAT: out.f = powf(out.f, res.val.f); break;
+				switch (desired_type) {
+					case IR_TYPE_POS:
+					case IR_TYPE_NAT:  out.i = powi(out.i, res.val.i); break;
+					case IR_TYPE_REAL: out.f = powf(out.f, res.val.f); break;
 					default: return (IR_Eval_Res){0};
 				}
 			}
@@ -544,50 +495,46 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 	}
 }
 
-void addRandChildren(IR *node, i32 depth)
-{
-	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
-	IR_Inst randLiterals[] = RAND_LITERALS;
-	i32 amount = getExpectedChildAmount(node->inst);
-	if (amount < 0) amount = 2 + (xorshift() % 3);
-	for (i32 i = 0; i < amount; i++) {
-		IR child;
-		if (depth >= MAX_RAND_DEPTH) {
-			IR_Inst inst = randLiterals[xorshift() % (sizeof(randLiterals)/sizeof(randLiterals[0]))];
-			child = (IR){ .inst = inst, .type = IR_TYPE_FLOAT, .val = {0}, .children = ail_da_new_empty(IR) };
-		} else {
-			do {
-			    bool getPrefered = (xorshift() % 2) == 0;
-			    u32 idx;
-			    if (getPrefered) idx = RAND_PREFERED_NAMED_TOK_MAP_MIN + (xorshift() % RAND_PREFERED_NAMED_TOK_MAP_LEN);
-				else             idx = xorshift() % sizeof(namedTokMap)/sizeof(namedTokMap[0]);
-				child = namedTokMap[idx].ir;
-			} while (AIL_UNLIKELY(child.type != IR_TYPE_ANY && child.type != IR_TYPE_FLOAT));
-			addRandChildren(&child, depth + 1);
-		}
-		ail_da_push(&node->children, child);
-	}
-}
+// void addRandChildren(IR *node, i32 depth)
+// {
+// 	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
+// 	IR_Inst randLiterals[] = RAND_LITERALS;
+// 	i32 amount = getExpectedChildAmount(node->inst);
+// 	if (amount < 0) amount = 2 + (xorshift() % 3);
+// 	for (i32 i = 0; i < amount; i++) {
+// 		IR child;
+// 		if (depth >= MAX_RAND_DEPTH) {
+// 			IR_Inst inst = randLiterals[xorshift() % (sizeof(randLiterals)/sizeof(randLiterals[0]))];
+// 			child = (IR){ .inst = inst, .type = IR_TYPE_FLOAT, .val = {0}, .children = ail_da_new_empty(IR) };
+// 		} else {
+// 			do {
+// 			    bool getPrefered = (xorshift() % 2) == 0;
+// 			    u32 idx;
+// 			    if (getPrefered) idx = RAND_PREFERED_NAMED_TOK_MAP_MIN + (xorshift() % RAND_PREFERED_NAMED_TOK_MAP_LEN);
+// 				else             idx = xorshift() % sizeof(namedTokMap)/sizeof(namedTokMap[0]);
+// 				child = namedTokMap[idx].ir;
+// 			} while (AIL_UNLIKELY(child.type != IR_TYPE_ANY && child.type != IR_TYPE_FLOAT));
+// 			addRandChildren(&child, depth + 1);
+// 		}
+// 		ail_da_push(&node->children, child);
+// 	}
+// }
 
 IR randFunction()
 {
 	IR root = { .inst = IR_INST_ROOT, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 1) };
 	IR vec2 = { .inst = IR_INST_VEC2, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 2) };
-	addRandChildren(&vec2, 1);
+	// addRandChildren(&vec2, 1);
 	ail_da_push(&root.children, vec2);
 	return root;
 }
 
 void irToStrHelper(IR node, AIL_DA(char) *sb)
 {
-	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
 	const char *name = NULL;
-	for (u32 i = 0; i < sizeof(namedTokMap)/sizeof(namedTokMap[0]); i++) {
-		if (namedTokMap[i].ir.inst == node.inst) {
-			name = namedTokMap[i].s;
-			break;
-		}
-	}
+	#define X(instr, str, t) if (instr == node.inst) { name = str; }
+		INSTRUCTIONS
+	#undef X
 	AIL_ASSERT(name != NULL);
 
 	if (node.children.len > 0) ail_da_push(sb, '(');
