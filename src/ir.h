@@ -143,7 +143,7 @@ void insertConv(IR *node, i32 idx);
 i32 getExpectedChildAmount(IR_Inst inst);
 bool checkUserFunc(IR *root);
 IR_Eval_Res evalUserFunc(IR node, Vector2 in);
-IR randFunction();
+IR randFunction(void);
 AIL_DA(char) irToStr(IR node);
 
 #endif // _IR_H_

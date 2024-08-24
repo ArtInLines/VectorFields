@@ -1,6 +1,6 @@
 #include "helpers.h"
 
-u32 xorshift()
+u32 xorshift(void)
 {
 	static u32 RNGState = 69;
 	RNGState ^= RNGState << 13;

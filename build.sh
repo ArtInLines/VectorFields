@@ -21,9 +21,9 @@ fi
 if [ -f "./bin/VectorFields" ]; then
 	rm -f "./bin/VectorFields"
 fi
-if [[ $1 == "d" ]] || [[ $1 == "-d" ]]; then
-	CFLAGS="$CFLAGS $DEV_FLAGS"
-else
+if [[ $1 == "r" ]] || [[ $1 == "-r" ]]; then
 	CFLAGS="$CFLAGS $PROD_FLAGS"
+else
+	CFLAGS="$CFLAGS $DEV_FLAGS"
 fi
 gcc $CFLAGS -o bin/VectorFields src/helpers.c src/ir.c src/main.c $DEPS

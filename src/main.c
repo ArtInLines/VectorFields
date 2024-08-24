@@ -7,6 +7,8 @@
 #include "helpers.h"
 #include "ir.h"
 
+// @Note: Define START_FULLSCREEN to start app in fullscreen
+
 #define INIT_WIDTH 1200
 #define INIT_HEIGHT 800
 #define FPS 60
@@ -165,7 +167,9 @@ int main(void)
     SetGesturesEnabled(GESTURE_PINCH_IN | GESTURE_PINCH_OUT);
     SetTargetFPS(FPS);
     SetExitKey(KEY_F4);
+#ifdef START_FULLSCREEN
     toggleFullscreen(); // @Note: Starts the application in fullscreen, particularly nice when used as a screen-saver
+#endif
     Font font = LoadFontEx("./assets/Roboto-Regular.ttf", 40, NULL, 94);
     AIL_Gui_Style style = {
         .color        = BLACK,
@@ -180,7 +184,7 @@ int main(void)
         .hAlign       = AIL_GUI_ALIGN_LT,
         .vAlign       = AIL_GUI_ALIGN_LT,
     };
-    AIL_Gui_Label label = ail_gui_newLabel((Rectangle){0}, defaultFunc, style, style);
+    AIL_Gui_Label label = ail_gui_newLabel((Rectangle){ .height = style.font_size + 2*style.pad }, defaultFunc, style, style);
     inputBox = ail_gui_newInputBox("", true, true, true, label);
 
     parseUserFunc(inputBox.label.text.data, inputBox.label.text.len - 1, &root);

@@ -6,7 +6,7 @@
 #include "raylib.h"
 #include "ail.h"
 
-u32 xorshift();
+u32 xorshift(void);
 float xorshiftf(float min, float max);
 Vector2 addVector2(Vector2 a, Vector2 b);
 Vector2 subVector2(Vector2 a, Vector2 b);

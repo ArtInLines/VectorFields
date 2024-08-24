@@ -31,6 +31,10 @@ After you downloaded the source code, simply navigate to its root folder and run
 
 Alternatively you can also just run `run.bat`/`run.sh` to both build and run the executable.
 
+If you want the application to start in fullscreen-mode, you need to build with `START_FULLSCREEN` defined
+
+To build in release mode, run the build/run script with the `-r` flag.
+
 All dependencies are packaged in the `deps/` folder and are built along with the executable, so no prior setup should be required.
 
 ## Dependencies

@@ -29,9 +29,9 @@ if defined BUILD_ALL (
 
 :: Build executable
 cmd /c if exist bin\VectorFields.exe del /F bin\VectorFields.exe
-set DEV=
-if "%~1"=="d" set DEV=1
-if "%~1"=="-d" set DEV=1
+set DEV=1
+if "%~1"=="r" set DEV=0
+if "%~1"=="-r" set DEV=0
 if defined DEV (
 	set CFLAGS=%CFLAGS% %DEV_FLAGS%
 ) else (
