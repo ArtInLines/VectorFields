@@ -121,10 +121,13 @@ void drawVectorField(void)
         checkUserFunc(&root);
         ail_da_free(&inputBox.label.text);
         inputBox.label.text = irToStr(root);
+        inputBox.cur = 0;
     }
 
     inputBox.label.bounds.width  = fieldWidth;
     inputBox.label.bounds.height = fieldHeight;
+    Rectangle b = inputBox.label.bounds;
+    ail_gui_resizeLabel(&inputBox.label, ail_gui_getState(b.x, b.y, b.width, b.height));
 
     if (ail_gui_isPointInRec(GetMouseX(),
                          GetMouseY(),
@@ -141,8 +144,6 @@ void drawVectorField(void)
     }
 
     if (hideHUDSecs < hideHUDAfter) {
-        Rectangle b = inputBox.label.bounds;
-        ail_gui_resizeLabel(&inputBox.label, ail_gui_getState(b.x, b.y, b.width, b.height));
         AIL_Gui_Update_Res res = ail_gui_drawInputBox(&inputBox);
         if (res.escape || res.tab) inputBox.selected = false;
         // @TODO: Show error messages to user
@@ -232,6 +233,8 @@ int main(void)
                     if (IsWindowState(FLAG_FULLSCREEN_MODE)) toggleFullscreen();
                     else break;
                 }
+            } else if (isKeyPressedPopped(KEY_ESCAPE)) {
+                inputBox.selected = false;
             }
             drawVectorField();
         }
