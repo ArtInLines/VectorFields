@@ -32,14 +32,6 @@ bool isNum(char c)
 	return c >= '0' && c <= '9';
 }
 
-bool isOp(char c)
-{
-	// Asserts exist, bc we assume that only '+', '-', '*', '/' and '**' exist as operators
-	AIL_STATIC_ASSERT(IR_META_INST_LAST_LASSOC - IR_META_INST_FIRST_LASSOC - 1 == 5);
-	AIL_STATIC_ASSERT(IR_META_INST_LAST_RASSOC - IR_META_INST_FIRST_RASSOC - 1 == 1);
-	return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
-}
-
 // Unlike strcmp only `a` needs to be null-terminated
 bool strEq(const char *a, const char *b)
 {
@@ -47,10 +39,131 @@ bool strEq(const char *a, const char *b)
 	return !*a && *(a-1) == *(b-1);
 }
 
+static u8 token_buffer_data[sizeof(IR_Token) * 4];
+static AIL_RingBuffer token_buffer = {
+	.data = token_buffer_data,
+	.buffer_size = AIL_ARRLEN(token_buffer_data),
+};
+
+AIL_SV tokenize(AIL_SV sv)
+{
+	sv = ail_sv_ltrim(sv);
+	IR_Token tok;
+	tok.val.sv = ail_sv_from_parts(sv.str, 1);
+	if (!sv.len) {
+		tok.type = IR_TOK_NONE;
+	} else {
+		// Asserts exist, bc we assume that only '+', '-', '*', '/' and '**' exist as operators
+		AIL_STATIC_ASSERT(IR_META_INST_LAST_LASSOC - IR_META_INST_FIRST_LASSOC - 1 == 5);
+		AIL_STATIC_ASSERT(IR_META_INST_LAST_RASSOC - IR_META_INST_FIRST_RASSOC - 1 == 1);
+		switch (sv.str[0]) {
+			case '(': tok.type = IR_TOK_OPEN_PARAN;   break;
+			case ')': tok.type = IR_TOK_CLOSED_PARAN; break;
+			case ',': tok.type = IR_TOK_COMMA; break;
+			case '+': tok.type = IR_TOK_ADD;   break;
+			case '-': tok.type = IR_TOK_SUB;   break;
+			case '/': tok.type = IR_TOK_DIV;   break;
+			case '%': tok.type = IR_TOK_MOD;   break;
+			case '*': {
+				if (sv.len < 2 || sv.str[1] != '*') tok.type = IR_TOK_MUL;
+				else tok.type = IR_TOK_POW;
+			} break;
+			default: {
+				if (isAlpha(sv.str[0])) {
+					u32 n = 1;
+					while (isAlpha(n < sv.len && isAlpha(sv.str[n]))) n++;
+					tok.type = IR_TOK_ID;
+					tok.val.sv.len = n;
+					sv = ail_sv_offset(sv, n);
+				} else if (isNum(sv.str[0])) {
+					u32 n;
+					u64 x = ail_sv_parse_unsigned(sv, &n);
+					AIL_ASSERT(n != 0);
+					if (sv.len > n && sv.str[n] == '.') {
+						tok.type     = IR_TOK_REAL;
+						tok.val.real = ail_sv_parse_float(sv, &n);
+					} else {
+						tok.type    = IR_TOK_NAT;
+						tok.val.nat = x;
+					}
+					sv = ail_sv_offset(sv, n);
+				} else {
+					AIL_UNREACHABLE();
+					tok.type = IR_TOK_NONE;
+				}
+			}
+		}
+	}
+	ail_ring_writen(&token_buffer, sizeof(IR_Token), &tok);
+	return sv;
+}
+
+IR_Token popToken(AIL_SV *text)
+{
+	if (!ail_ring_len(token_buffer)) *text = tokenize(*text);
+	IR_Token tok;
+	ail_ring_readn(&token_buffer, sizeof(IR_Token), &tok);
+	return tok;
+}
+
+IR_Token peekToken(AIL_SV *text)
+{
+	if (!ail_ring_len(token_buffer)) *text = tokenize(*text);
+	IR_Token tok;
+	ail_ring_peekn(token_buffer, sizeof(IR_Token), &tok);
+	return tok;
+
+}
+
 // Return value is NULL or an error message
 // The parsed IR is written to node
-Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
+Parse_Err parseExpr(AIL_SV *text, IR *node, i32 depth)
 {
+	Parse_Err res = {0};
+	IR_Token cur_tok = popToken(text);
+	switch (cur_tok.type) {
+		case IR_TOK_NONE: {
+			if (depth) res.msg = "Unclosed Parantheses";
+			return res;
+		} break;
+		case IR_TOK_ID: {
+
+		} break;
+		case IR_TOK_NAT: {
+
+		} break;
+		case IR_TOK_REAL: {
+
+		} break;
+		case IR_TOK_POW: {
+
+		} break;
+		case IR_TOK_OPEN_PARAN: {
+
+		} break;
+		case IR_TOK_CLOSED_PARAN: {
+
+		} break;
+		case IR_TOK_COMMA: {
+
+		} break;
+		case IR_TOK_ADD: {
+
+		} break;
+		case IR_TOK_SUB: {
+
+		} break;
+		case IR_TOK_MUL: {
+
+		} break;
+		case IR_TOK_DIV: {
+
+		} break;
+		case IR_TOK_MOD: {
+
+		} break;
+	}
+
 	bool first = true;
 	for (char c; *idx < len; *idx += 1) {
 		c = text[*idx];
@@ -137,17 +250,16 @@ Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth)
 
 // Result is written to root
 // Output is error message or NULL on success
-Parse_Err parseUserFunc(char *text, i32 textlen, IR *root)
+Parse_Err parseUserFunc(AIL_SV *text, IR *root)
 {
 	root->inst = IR_INST_ROOT;
 	root->type = IR_TYPE_VEC2;
 	root->val  = (IR_Val) {0};
 	root->children = ail_da_new_empty(IR);
 
-	i32 idx = 0;
-	while (idx < textlen) {
+	while (text->len) {
 		IR *node = root;
-		Parse_Err err = parseExpr(text, textlen, &idx, node, 0);
+		Parse_Err err = parseExpr(text, node, 0);
 		if (err.msg) return err;
 	}
 	return (Parse_Err){0};

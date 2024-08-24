@@ -2,7 +2,11 @@
 #define _IR_H_
 
 #define  AIL_ALL_IMPL
+#define  AIL_RING_IMPL
+#define  AIL_SV_IMPL
 #include "ail.h"
+#include "ail_ring.h"
+#include "ail_sv.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
@@ -24,6 +28,31 @@ typedef enum {
 	IR_TYPE_VEC2,    // 2D vector of reals
 	IR_TYPE_LEN,     // Metadata containing amount of available types
 } IR_Type;
+
+typedef enum {
+	IR_TOK_NONE, // used to indicate that all tokens have been exhausted
+	IR_TOK_ID,   // Identifier
+	IR_TOK_NAT,  // Natural number literal
+	IR_TOK_REAL, // Real / floating-point number literal
+	IR_TOK_POW,
+	IR_TOK_OPEN_PARAN   = '(',
+	IR_TOK_CLOSED_PARAN = ')',
+	IR_TOK_COMMA = ',',
+	IR_TOK_ADD   = '+',
+	IR_TOK_SUB   = '-',
+	IR_TOK_MUL   = '*',
+	IR_TOK_DIV   = '/',
+	IR_TOK_MOD   = '%',
+} IR_Token_Type;
+
+typedef struct {
+	IR_Token_Type type;
+	union {
+		AIL_SV sv;
+		u64 nat;
+		f64 real;
+	} val;
+} IR_Token;
 
 typedef enum {
 	IR_INST_ROOT = 0, // only for root node
@@ -115,7 +144,6 @@ struct IR {
 
 typedef struct {
 	char *msg;
-	i32 idx;
 } Parse_Err;
 
 #define MAX_NAMED_TOK_SZ 8 // 8 -> nice alignment for IR_NAMED_TOK_MAP
@@ -129,8 +157,8 @@ bool isAlpha(char c);
 bool isNum(char c);
 bool isOp(char c);
 bool strEq(const char *a, const char *b);
-Parse_Err parseExpr(char *text, i32 len, i32 *idx, IR *node, i32 depth);
-Parse_Err parseUserFunc(char *text, i32 textlen, IR *root);
+Parse_Err parseExpr(AIL_SV *text, IR *node, i32 depth);
+Parse_Err parseUserFunc(AIL_SV *text, IR *root);
 i32 getExpectedChildAmount(IR_Inst inst);
 bool checkUserFunc(IR *root);
 IR_Eval_Res evalUserFunc(IR node, Input in, IR_Type desired_type);

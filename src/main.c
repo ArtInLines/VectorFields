@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "rlgl.h"
 #define AIL_ALL_IMPL
-#define AIL_GUI_IMPL
+#define AIL_RING_IMPL
 #include "ail.h"
 #include "ail_gui.h"
 #include "helpers.h"
@@ -33,7 +33,7 @@ static Particle *field;
 static IR root;
 static IR updatedRoot;
 static AIL_Gui_Input_Box inputBox;
-static char *defaultFunc = "(vec2 (sin (+ x y)) (cos (* x y)))";
+static char *defaultFunc = "vec2(sin(x + y), cos(x * y))";
 
 
 bool isKeyPressedPopped(KeyboardKey key)
@@ -166,7 +166,7 @@ int main(void)
     SetGesturesEnabled(GESTURE_PINCH_IN | GESTURE_PINCH_OUT);
     SetTargetFPS(FPS);
     SetExitKey(KEY_F4);
-    toggleFullscreen(); // @Note: Starts the application in fullscreen, particularly nice when used as a screen-saver
+    // toggleFullscreen(); // @Note: Starts the application in fullscreen, particularly nice when used as a screen-saver
     Font font = LoadFontEx("./assets/Roboto-Regular.ttf", 40, NULL, 94);
     AIL_Gui_Style style = {
         .color        = BLACK,
