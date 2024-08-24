@@ -544,18 +544,19 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 	}
 }
 
-#define RAND_MAX_DEPTH 4
-#define RAND_PREFERED_CHANCE 98 // in percentage points
+#define RAND_MAX_DEPTH 6
+#define RAND_MIN_DEPTH 2
+#define RAND_PREFERED_CHANCE 99 // in percentage points
 
 void addRandChildren(IR *node, i32 depth)
 {
 	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
 	IR_Inst randLiterals[] = RAND_LITERALS;
 	i32 amount = getExpectedChildAmount(node->inst);
-	if (amount < 0) amount = 2 + (xorshift() % RAND_MAX_DEPTH);
+	if (amount < 0) amount = 2 + (xorshift() % 3);
 	for (i32 i = 0; i < amount; i++) {
 		IR child;
-		if (depth >= MAX_RAND_DEPTH) {
+		if (depth <= 0) {
 			IR_Inst inst = randLiterals[xorshift() % (sizeof(randLiterals)/sizeof(randLiterals[0]))];
 			child = (IR){ .inst = inst, .type = IR_TYPE_FLOAT, .val = {0}, .children = ail_da_new_empty(IR) };
 		} else {
@@ -567,7 +568,7 @@ void addRandChildren(IR *node, i32 depth)
 				else             idx = xorshift() % AIL_ARRLEN(namedTokMap);
 				child = namedTokMap[idx].ir;
 			} while (AIL_UNLIKELY(child.type != IR_TYPE_ANY && child.type != IR_TYPE_FLOAT));
-			addRandChildren(&child, depth + 1);
+			addRandChildren(&child, depth - 1);
 		}
 		ail_da_push(&node->children, child);
 	}
@@ -577,7 +578,8 @@ IR randFunction(void)
 {
 	IR root = { .inst = IR_INST_ROOT, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 1) };
 	IR vec2 = { .inst = IR_INST_VEC2, .type = IR_TYPE_VEC2, .val = {0}, .children = ail_da_new_with_cap(IR, 2) };
-	addRandChildren(&vec2, 1);
+	i32 depth = RAND_MIN_DEPTH + (xorshift() % (RAND_MAX_DEPTH - RAND_MIN_DEPTH));
+	addRandChildren(&vec2, depth);
 	ail_da_push(&root.children, vec2);
 	return root;
 }
