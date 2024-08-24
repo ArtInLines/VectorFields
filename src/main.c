@@ -121,8 +121,8 @@ void drawVectorField(void)
         inputBox.label.text = irToStr(root);
     }
 
-    inputBox.label.bounds.width = fieldWidth;
-    inputBox.label.bounds.width = fieldHeight;
+    inputBox.label.bounds.width  = fieldWidth;
+    inputBox.label.bounds.height = fieldHeight;
 
     if (ail_gui_isPointInRec(GetMouseX(),
                          GetMouseY(),
@@ -139,6 +139,8 @@ void drawVectorField(void)
     }
 
     if (hideHUDSecs < hideHUDAfter) {
+        Rectangle b = inputBox.label.bounds;
+        ail_gui_resizeLabel(&inputBox.label, ail_gui_getState(b.x, b.y, b.width, b.height));
         AIL_Gui_Update_Res res = ail_gui_drawInputBox(&inputBox);
         if (res.escape || res.tab) inputBox.selected = false;
         // @TODO: Show error messages to user
@@ -184,7 +186,7 @@ int main(void)
         .hAlign       = AIL_GUI_ALIGN_LT,
         .vAlign       = AIL_GUI_ALIGN_LT,
     };
-    AIL_Gui_Label label = ail_gui_newLabel((Rectangle){ .height = style.font_size + 2*style.pad }, defaultFunc, style, style);
+    AIL_Gui_Label label = ail_gui_newLabel((Rectangle){0}, defaultFunc, style, style);
     inputBox = ail_gui_newInputBox("", true, true, true, label);
 
     parseUserFunc(inputBox.label.text.data, inputBox.label.text.len - 1, &root);

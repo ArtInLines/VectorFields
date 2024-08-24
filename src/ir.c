@@ -544,12 +544,15 @@ IR_Eval_Res evalUserFunc(IR node, Vector2 in)
 	}
 }
 
+#define RAND_MAX_DEPTH 4
+#define RAND_PREFERED_CHANCE 98 // in percentage points
+
 void addRandChildren(IR *node, i32 depth)
 {
 	IR_NAMED_TOK_MAP namedTokMap[] = NAMED_TOK_MAP;
 	IR_Inst randLiterals[] = RAND_LITERALS;
 	i32 amount = getExpectedChildAmount(node->inst);
-	if (amount < 0) amount = 2 + (xorshift() % 3);
+	if (amount < 0) amount = 2 + (xorshift() % RAND_MAX_DEPTH);
 	for (i32 i = 0; i < amount; i++) {
 		IR child;
 		if (depth >= MAX_RAND_DEPTH) {
@@ -557,10 +560,11 @@ void addRandChildren(IR *node, i32 depth)
 			child = (IR){ .inst = inst, .type = IR_TYPE_FLOAT, .val = {0}, .children = ail_da_new_empty(IR) };
 		} else {
 			do {
-			    bool getPrefered = (xorshift() % 2) == 0;
+			    bool getPrefered = (xorshift() % 100) < RAND_PREFERED_CHANCE;
+				// printf("getPrefered: %d\n", getPrefered);
 			    u32 idx;
 			    if (getPrefered) idx = RAND_PREFERED_NAMED_TOK_MAP_MIN + (xorshift() % RAND_PREFERED_NAMED_TOK_MAP_LEN);
-				else             idx = xorshift() % sizeof(namedTokMap)/sizeof(namedTokMap[0]);
+				else             idx = xorshift() % AIL_ARRLEN(namedTokMap);
 				child = namedTokMap[idx].ir;
 			} while (AIL_UNLIKELY(child.type != IR_TYPE_ANY && child.type != IR_TYPE_FLOAT));
 			addRandChildren(&child, depth + 1);
