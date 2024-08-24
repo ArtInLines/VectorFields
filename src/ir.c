@@ -601,6 +601,7 @@ void irToStrHelper(IR node, AIL_DA(char) *sb)
 		for (u32 i = 0; i < node.children.len; i++) {
 			irToStrHelper(((IR *)node.children.data)[i], sb);
 		}
+		sb->len--;
 		ail_da_push(sb, ')');
 		ail_da_push(sb, ' ');
 	}

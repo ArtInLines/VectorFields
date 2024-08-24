@@ -196,7 +196,9 @@ int main(void)
         if (IsWindowResized()) {
             fieldWidth  = GetScreenWidth();
             fieldHeight = GetScreenHeight();
+            BeginDrawing();
             ClearBackground(BLACK);
+            EndDrawing();
         }
         BeginDrawing();
 
