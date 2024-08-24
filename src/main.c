@@ -9,6 +9,8 @@
 
 // @Note: Define START_FULLSCREEN to start app in fullscreen
 
+
+#define FONT_SIZE 30
 #define INIT_WIDTH 1200
 #define INIT_HEIGHT 800
 #define FPS 60
@@ -172,16 +174,16 @@ int main(void)
 #ifdef START_FULLSCREEN
     toggleFullscreen(); // @Note: Starts the application in fullscreen, particularly nice when used as a screen-saver
 #endif
-    Font font = LoadFontEx("./assets/Roboto-Regular.ttf", 40, NULL, 94);
+    Font font = LoadFontEx("./assets/Roboto-Regular.ttf", FONT_SIZE, NULL, 94);
     AIL_Gui_Style style = {
         .color        = BLACK,
         .bg           = LIGHTGRAY,
         .border_color = DARKGRAY,
         .border_width = 3,
         .font         = font,
-        .font_size    = 40,
+        .font_size    = FONT_SIZE,
         .cSpacing     = 0,
-        .lSpacing     = 5,
+        .lSpacing     = 2,
         .pad          = 10,
         .hAlign       = AIL_GUI_ALIGN_LT,
         .vAlign       = AIL_GUI_ALIGN_LT,
