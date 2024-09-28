@@ -26,4 +26,6 @@ if [[ $1 == "r" ]] || [[ $1 == "-r" ]]; then
 else
 	CFLAGS="$CFLAGS $DEV_FLAGS"
 fi
+
+set -xe
 gcc $CFLAGS -o bin/VectorFields src/helpers.c src/ir.c src/main.c $DEPS

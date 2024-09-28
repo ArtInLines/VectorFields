@@ -37,4 +37,7 @@ if defined DEV (
 ) else (
 	set CFLAGS=%CFLAGS% %PROD_FLAGS%
 )
+
+@echo on
 gcc %CFLAGS% -o bin/VectorFields src/main.c src/helpers.c src/ir.c %DEPS%
+@echo off
