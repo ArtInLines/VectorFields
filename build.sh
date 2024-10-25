@@ -1,6 +1,6 @@
 PROD_FLAGS="-O2 -s"
 DEV_FLAGS="-g -ggdb"
-CFLAGS="-Wall -Wextra -Wimplicit -Wpedantic -Wno-unused-function -std=c99"
+CFLAGS="-Wall -Wextra -Wimplicit -Wpedantic -Wno-unused-function -Wno-unused-variable -std=c11"
 
 LIB_PATHS="-L./bin"
 INCLUDES="-I./deps/raylib/src -I./deps/ail"

@@ -153,7 +153,7 @@ Parse_Err parseUserFunc(char *text, i32 textlen, IR *root)
 	root->inst = IR_INST_ROOT;
 	root->type = IR_TYPE_VEC2;
 	root->val  = (IR_Val) {0};
-	root->children = ail_da_new_empty(IR);
+	root->children = ail_da_new_empty_t(IR);
 
 	i32 idx = 0;
 	while (idx < textlen) {
@@ -168,7 +168,7 @@ void insertConv(IR *node, i32 idx)
 {
 	IR newNode = {0};
 	memcpy(&newNode, &((IR *)node->children.data)[idx], sizeof(IR));
-	((IR *)node->children.data)[idx].children = ail_da_new_empty(IR);
+	((IR *)node->children.data)[idx].children = ail_da_new_empty_t(IR);
 	ail_da_push(&((IR *)node->children.data)[idx].children, newNode);
 	((IR *)node->children.data)[idx].inst = IR_INST_CONV;
 	((IR *)node->children.data)[idx].type = IR_TYPE_FLOAT;

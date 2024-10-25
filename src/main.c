@@ -7,8 +7,12 @@
 #include "helpers.h"
 #include "ir.h"
 
+// @Note: Define SCREEN_SAVER to start app in fullscreen and close it immediately with Escape
 // @Note: Define START_FULLSCREEN to start app in fullscreen
 
+#if defined(SCREEN_SAVER) && !defined(START_FULLSCREEN)
+#   define START_FULLSCREEN
+#endif
 
 #define FONT_SIZE 30
 #define INIT_WIDTH 1200
@@ -204,6 +208,10 @@ int main(void)
             EndDrawing();
         }
         BeginDrawing();
+
+#ifdef SCREEN_SAVER
+        if (IsKeyPressed(KEY_ESCAPE)) break;
+#endif
 
         if (showField) {
             if (!inputBox.selected) {

@@ -3,7 +3,7 @@
 :: -mwindows : Compile a Windows executable, no cmd window
 set PROD_FLAGS=-O2 -mwindows -s
 set DEV_FLAGS=-g -ggdb
-set CFLAGS=-Wall -Wextra -Wimplicit -Wpedantic -Wno-unused-function -std=c99
+set CFLAGS=-Wall -Wextra -Wimplicit -Wpedantic -Wno-unused-function -Wno-unused-variable -std=c11
 
 :: Compiler-Options to include dependencies
 set LIB_PATHS=-L./bin
